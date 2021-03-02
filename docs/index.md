@@ -94,7 +94,7 @@ ASIC tools all require various views from the standard-cell library.
 Extensive documentation is provided by Synopsys and Cadence for these
 ASIC tools. We have organized this documentation and made it available to
 you on the [public course
-webpage](http://www.csl.cornell.edu/courses/ece5745/syndocs). The
+webpage](https://www.csl.cornell.edu/courses/ece5745/asicdocs/index.html). The
 username/password was distributed during lecture.
 
 The first step is to source the setup script, clone this repository from
@@ -151,8 +151,6 @@ difficult. It requires gaining access to the PDK first, negotiating with
 a company which makes standard cells, and usually signing more
 non-disclosure agreements. In this course, we will be using the Nangate
 45nm standard-cell library which is based on the open FreePDK45 PDK.
-
- - http://projects.si2.org/openeda.si2.org/projects/nangatelib
 
 Nangate is a company which makes a tool to automatically generate
 standard-cell libraries, so they have made this library publically
@@ -559,9 +557,9 @@ and analyze the design.
 Finally, a standard-cell library will always include a databook, which is
 a document that describes the details of every cell in the library. Take
 a few minutes to browse through the Nangate standard-cell library
-databook located here:
+databook located on the class Canvas page here:
 
- - http://www.csl.cornell.edu/courses/ece5745/resources/freepdk45-nangate-databook.pdf
+ - https://canvas.cornell.edu/files/3153288/download
 
 PyMTL3-Based Testing, Simulation, Translation
 --------------------------------------------------------------------------
@@ -592,28 +590,27 @@ tutorial then you might want to go back and do that now. Basically the
 
 ```
 from pymtl3 import *
-from pymtl3 import *
 
 class MinMaxUnit( Component ):
 
   # Constructor
 
-  def construct( s, DataType ):
+  def construct( s, nbits ):
 
-    s.in0     = InPort ( DataType )
-    s.in1     = InPort ( DataType )
-    s.out_min = OutPort( DataType )
-    s.out_max = OutPort( DataType )
+    s.in0     = InPort ( nbits )
+    s.in1     = InPort ( nbits )
+    s.out_min = OutPort( nbits )
+    s.out_max = OutPort( nbits )
 
-    @s.update
+    @update
     def block():
 
       if s.in0 >= s.in1:
-        s.out_max = s.in0
-        s.out_min = s.in1
+        s.out_max @= s.in0
+        s.out_min @= s.in1
       else:
-        s.out_max = s.in1
-        s.out_min = s.in0
+        s.out_max @= s.in1
+        s.out_min @= s.in0
 
   # Line tracing
 
@@ -632,12 +629,12 @@ simulator to do the final translation into Verilog and to dump the `.vcd`
 ```
  % cd $TOPDIR/sim/build
  % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-vcd
- num_cycles          = 105
- num_cycles_per_sort = 1.05
+ num_cycles          = 106
+ num_cycles_per_sort = 1.06
 ```
 
 Take a moment to open up the translated Verilog which should be in a file
-named `SortUnitStructRTL_8bit.v`. Try to see how both the structural
+named `SortUnitStructRTL__nbits_8__pickled.v`. Try to see how both the structural
 composition and the behavioral modeling translates into Verilog. Here is
 an example of the translation for the `MinMaxUnit`. Notice how PyMTL3 will
 output the source Python embedded as a comment in the corresponding
@@ -645,11 +642,11 @@ translated Verilog.
 
 ```
  % cd $TOPDIR/sim/build
- % less SortUnitStructRTL_8bit.v
+ % less SortUnitStructRTL__nbits_8__pickled.v
 
- // PyMTL3 Component MinMaxUnit Definition
+ // PyMTL Component MinMaxUnit Definition
  // At .../sim/tut3_pymtl/sort/MinMaxUnit.py
- module MinMaxUnit__DataType_Bits8
+ module MinMaxUnit__nbits_8
  (
    input  logic [0:0] clk,
    input  logic [7:0] in0,
@@ -659,17 +656,17 @@ translated Verilog.
    input  logic [0:0] reset
  );
 
-   // PyMTL3 Update Block Source
-   // At .../sim/tut3_pymtl/sort/MinMaxUnit.py:26
-   // @s.update
-   // def block():
-   //
-   //   if s.in0 >= s.in1:
-   //     s.out_max = s.in0
-   //     s.out_min = s.in1
-   //   else:
-   //     s.out_max = s.in1
-   //     s.out_min = s.in0
+    // PyMTL Update Block Source
+    // At /home/sj634/workspace/ece5745-labs/sim/tut3_pymtl/sort/MinMaxUnit.py:26
+    // @update
+    // def block():
+    //
+    //   if s.in0 >= s.in1:
+    //     s.out_max @= s.in0
+    //     s.out_min @= s.in1
+    //   else:
+    //     s.out_max @= s.in1
+    //     s.out_min @= s.in0
 
    always_comb begin : block
      if ( in0 >= in1 ) begin
@@ -705,7 +702,7 @@ single average activity factor for every net.
 
 ```
  % cd $TOPDIR/sim/build
- % vcd2saif -input sort-rtl-struct-random.vcd -output sort-rtl-struct-random.saif
+ % vcd2saif -input sort-rtl-struct-random.verilator1.vcd -output sort-rtl-struct-random.saif
 ```
 
 Using Synopsys Design Compiler for Synthesis
@@ -778,7 +775,7 @@ module references starting from the top-level module, and also infers
 various registers and/or advanced data-path components.
 
 ```
- dc_shell> analyze -format sverilog ../../sim/build/SortUnitStructRTL_8bit.v
+ dc_shell> analyze -format sverilog ../../sim/build/SortUnitStructRTL__nbits_8__pickled.v
  dc_shell> elaborate SortUnitStructRTL_8bit
 ```
 
@@ -789,14 +786,17 @@ errors in our Verilog RTL.
  dc_shell> check_design
 ```
 
-You should not see any warnings, however, it is _critical_ that you
-carefully review all warnings and errors when you analyze and elaborate a
-design with Synopsys DC. There may be many warnings, but you should still
-skim through them. Often times there will be something very wrong in your
-Verilog RTL which means any results from using the ASIC tools is
-completely bogus. Synopsys DC will output a warning, but Synopsys DC will
-usually just keep going, potentially producing a completely incorrect
-gate-level model!
+You may see some warnings regarding `clk[0]` and `reset[0]` ports
+not being connected to any nets in certain modules. This is ok, since in 
+PyMTL translation we automatically add those ports to all modules, so they
+may not actually be used. Aside from this, you should not see any warnings. 
+However, it is _critical_ that you carefully review all warnings and errors 
+when you analyze and elaborate a design with Synopsys DC. There may be many
+warnings, but you should still skim through them. Often times there will be
+something very wrong in your Verilog RTL which means any results from using 
+the ASIC tools is completely bogus. Synopsys DC will output a warning, but 
+Synopsys DC will usually just keep going, potentially producing a completely
+incorrect gate-level model!
 
 We need to create a clock constraint to tell Synopsys DC what our target
 cycle time is. Synopsys DC will not synthesize a design to run "as fast
@@ -1466,7 +1466,10 @@ timing and/or power analysis.
  innovus> rcOut -rc_corner typical -spef post-par.spef
 ```
 
-And of course we need to generate the real layout as a `.gds` file. This
+You may get an error regarding open nets. This is actually more of a warning
+message, and for the purposes of RC extraction we can ignore this.
+
+Finally, we of course need to generate the real layout as a `.gds` file. This
 is what we will send to the foundry when we are ready to tapeout the
 chip.
 
@@ -1908,7 +1911,7 @@ to the sort unit are zeros.
  % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --input zeros --stats --translate --dump-vcd
  num_cycles          = 105
  num_cycles_per_sort = 1.05
- % vcd2saif -input sort-rtl-struct-zeros.vcd -output sort-rtl-struct-zeros.saif
+ % vcd2saif -input sort-rtl-struct-zeros.verilator1.vcd -output sort-rtl-struct-zeros.saif
 ```
 
 Do you think a stream of random data will consume more or less power
@@ -2003,11 +2006,11 @@ for power analysis.
 ```
  % cd $TOPDIR/sim/build
  % ../tut4_verilog/sort/sort-sim --impl rtl-struct --stats --translate --dump-vcd
- % vcd2saif -input sort-rtl-struct-random.vcd -output sort-rtl-struct-random.saif
+ % vcd2saif -input sort-rtl-struct-random.verilator1.vcd -output sort-rtl-struct-random.saif
 ```
 
 Take a moment to open up the translated Verilog which should be in a file
-named `SortUnitStructRTL_8bit.v`. You might ask, "Why do we need to use
+named `SortUnitFlatRTL__nbits_8__pickled.v`. You might ask, "Why do we need to use
 PyMTL3 to translate the Verilog if we already have the Verilog?" PyMTL3
 will take care of preprocessing all of your Verilog RTL code to ensure it
 is in a single Verilog file. This greatly simplifies getting your design
@@ -2029,4 +2032,3 @@ corresponding Verilog RTL and VCD file using the GCD Unit simulator,
 generate the corresponding `.saif` file, use Synopsys DC to synthesize
 the design to a gate-level netlist, use Cadence Innovus to
 place-and-route the design, and use Synopsys PT for power analysis.
-

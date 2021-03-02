@@ -8,8 +8,8 @@ from copy               import deepcopy
 from random             import randint
 
 from pymtl3             import *
-from pymtl3.stdlib.test import run_test_vector_sim
-from .SortUnitStructRTL import SortUnitStructRTL
+from pymtl3.stdlib.test_utils import run_test_vector_sim
+from ..SortUnitStructRTL import SortUnitStructRTL
 
 from .SortUnitFL_test   import tvec_stream, tvec_dups, tvec_sorted, tvec_random
 from .SortUnitCL_test   import mk_test_vector_table
@@ -34,7 +34,7 @@ x = '?'
 # test_basic
 #-------------------------------------------------------------------------
 
-def test_basic( dump_vcd, test_verilog ):
+def test_basic( cmdline_opts ):
   run_test_vector_sim( SortUnitStructRTL(), [ header_str,
     # in  in  in  in  in  out out out out out
     # val [0] [1] [2] [3] val [0] [1] [2] [3]
@@ -44,38 +44,38 @@ def test_basic( dump_vcd, test_verilog ):
     [ 0,  0,  0,  0,  0,  0,  x,  x,  x,  x ],
     [ 0,  0,  0,  0,  0,  1,  1,  2,  3,  4 ],
     [ 0,  0,  0,  0,  0,  0,  x,  x,  x,  x ],
-  ], dump_vcd, test_verilog )
+  ], cmdline_opts )
 
 #-------------------------------------------------------------------------
 # test_stream
 #-------------------------------------------------------------------------
 
-def test_stream( dump_vcd, test_verilog ):
+def test_stream( cmdline_opts ):
   run_test_vector_sim( SortUnitStructRTL(), mk_test_vector_table( 3, tvec_stream ),
-                       dump_vcd, test_verilog )
+                       cmdline_opts )
 
 #-------------------------------------------------------------------------
 # test_dups
 #-------------------------------------------------------------------------
 
-def test_dups( dump_vcd, test_verilog ):
+def test_dups( cmdline_opts ):
   run_test_vector_sim( SortUnitStructRTL(), mk_test_vector_table( 3, tvec_dups ),
-                       dump_vcd, test_verilog )
+                       cmdline_opts )
 
 #-------------------------------------------------------------------------
 # test_sorted
 #-------------------------------------------------------------------------
 
-def test_sorted( dump_vcd, test_verilog ):
+def test_sorted( cmdline_opts ):
   run_test_vector_sim( SortUnitStructRTL(), mk_test_vector_table( 3, tvec_sorted ),
-                       dump_vcd, test_verilog )
+                       cmdline_opts )
 
 #-------------------------------------------------------------------------
 # test_random
 #-------------------------------------------------------------------------
 
 @pytest.mark.parametrize( "nbits", [ 4, 8, 16, 32 ] )
-def test_random( nbits, dump_vcd, test_verilog ):
+def test_random( nbits, cmdline_opts ):
   tvec_random = [ [ randint(0,2**nbits-1) for _ in range(4) ] for _ in range(20) ]
   run_test_vector_sim( SortUnitStructRTL(nbits),
-    mk_test_vector_table( 3, tvec_random ), dump_vcd, test_verilog )
+    mk_test_vector_table( 3, tvec_random ), cmdline_opts )

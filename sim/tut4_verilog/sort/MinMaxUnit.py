@@ -6,39 +6,21 @@
 
 import os
 from pymtl3 import *
-from pymtl3.passes.backends.verilog import (
-  VerilogPlaceholderConfigs,
-  VerilatorImportConfigs,
-  TranslationConfigs,
-)
+from pymtl3.passes.backends.verilog import *
 
-class MinMaxUnit( Placeholder, Component ):
+class MinMaxUnit( VerilogPlaceholder, Component ):
 
   # Constructor
 
-  def construct( s, DataType ):
+  def construct( s, nbits ):
 
     # Port-based interface
 
-    s.in0     = InPort ( DataType )
-    s.in1     = InPort ( DataType )
-    s.out_min = OutPort( DataType )
-    s.out_max = OutPort( DataType )
+    s.in0     = InPort ( nbits )
+    s.in1     = InPort ( nbits )
+    s.out_min = OutPort( nbits )
+    s.out_max = OutPort( nbits )
 
     # Configurations
 
-    s.config_placeholder = VerilogPlaceholderConfigs(
-      # Path to the Verilog source file
-      src_file = os.path.dirname( __file__ ) + '/MinMaxUnit.v',
-      # Name of the Verilog top level module
-      top_module = 'tut4_verilog_sort_MinMaxUnit',
-      # MinMaxUnit does not have clk and reset pins
-      has_clk   = False,
-      has_reset = False,
-      # Verilog Parameters
-      params = { 'p_nbits' : DataType.nbits },
-    )
-    s.config_verilog_translate = TranslationConfigs(
-      translate = False,
-      explicit_module_name = 'MinMaxUnit',
-    )
+    s.set_metadata( VerilogPlaceholderPass.params, { 'p_nbits' : nbits } )

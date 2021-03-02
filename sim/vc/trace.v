@@ -185,10 +185,10 @@ module vc_Trace
   //----------------------------------------------------------------------
   // Append a string modified by val/rdy signals.
 
-  task append_en_rdy_str
+  task append_val_rdy_str
   (
     inout logic [nbits-1:0] trace,
-    input logic             en,
+    input logic             val,
     input logic             rdy,
     input logic [nbits-1:0] str
   );
@@ -199,18 +199,18 @@ module vc_Trace
       len1 = len1 + 1;
     end
 
-    if ( en & rdy ) begin
+    if ( val & rdy ) begin
       append_str( trace, str );
     end
-    else if ( rdy && !en ) begin
+    else if ( rdy && !val ) begin
       append_chars( trace, " ", len1 );
     end
-    else if ( !rdy && !en ) begin
-      append_str( trace, "#" );
+    else if ( !rdy && !val ) begin
+      append_str( trace, "." );
       append_chars( trace, " ", len1-1 );
     end
-    else if ( !rdy && en ) begin
-      append_str( trace, "X" );
+    else if ( !rdy && val ) begin
+      append_str( trace, "#" );
       append_chars( trace, " ", len1-1 );
     end
     else begin

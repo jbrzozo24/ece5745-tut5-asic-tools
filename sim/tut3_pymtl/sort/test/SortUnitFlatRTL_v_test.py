@@ -3,11 +3,11 @@
 #=========================================================================
 
 from pymtl3                         import *
-from pymtl3.passes.backends.verilog import VerilogPlaceholderPass, TranslationImportPass
-from pymtl3.stdlib.test             import config_model
-from .SortUnitFlatRTL               import SortUnitFlatRTL
+from pymtl3.passes.backends.verilog import *
+from pymtl3.stdlib.test_utils       import config_model_with_cmdline_opts
+from ..SortUnitFlatRTL               import SortUnitFlatRTL
 
-def test_verilate( dump_vcd, test_verilog ):
+def test_verilate( cmdline_opts ):
 
   # Conflat the model
 
@@ -15,36 +15,29 @@ def test_verilate( dump_vcd, test_verilog ):
 
   # Configure the model
 
-  config_model( model, dump_vcd, test_verilog )
-
-  # Apply necessary passes
-
-  model.apply ( VerilogPlaceholderPass() )
-  model = TranslationImportPass()( model )
+  model = config_model_with_cmdline_opts( model, cmdline_opts, duts=[] ) # use model itself
 
   # Create and reset simulator
 
-  model.apply( SimulationPass() )
+  model.apply( DefaultPassGroup(print_line_trace=True) )
   model.sim_reset()
-  print("")
 
   # Helper function
 
   def t( in_val, in_, out_val, out ):
 
-    model.in_val = b1(in_val)
+    model.in_val @= in_val
     for i,v in enumerate( in_ ):
-      model.in_[i] = b8(v)
+      model.in_[i] @= v
 
-    model.eval_combinational()
-    print( model.line_trace() )
+    model.sim_eval_combinational()
 
     assert model.out_val == out_val
     if ( out_val ):
       for i,v in enumerate( out ):
         assert model.out[i] == v
 
-    model.tick()
+    model.sim_tick()
 
   # Cycle-by-cycle tests
 
