@@ -3,7 +3,7 @@ ECE 5745 Tutorial 5: Synopsys/Cadence ASIC Tools
 ==========================================================================
 
  - Author: Christopher Batten
- - Date: January 26, 2019
+ - Date: March 2, 2021
 
 **Table of Contents**
 
@@ -202,7 +202,6 @@ contains these symlinks.
  stdcells-databook.pdf  # standard-cell library databook
 
  klayout.lyp            # layer settings for Klayout
- adk.tcl                # general TCL settings for the ADK
 ```
 
 Let's begin by looking at the schematic for a 3-input NAND cell
@@ -776,7 +775,7 @@ various registers and/or advanced data-path components.
 
 ```
  dc_shell> analyze -format sverilog ../../sim/build/SortUnitStructRTL__nbits_8__pickled.v
- dc_shell> elaborate SortUnitStructRTL_8bit
+ dc_shell> elaborate SortUnitStructRTL__nbits_8
 ```
 
 We can use the `check_design` command to make sure there are no obvious
@@ -786,17 +785,17 @@ errors in our Verilog RTL.
  dc_shell> check_design
 ```
 
-You may see some warnings regarding `clk[0]` and `reset[0]` ports
-not being connected to any nets in certain modules. This is ok, since in 
-PyMTL translation we automatically add those ports to all modules, so they
-may not actually be used. Aside from this, you should not see any warnings. 
-However, it is _critical_ that you carefully review all warnings and errors 
-when you analyze and elaborate a design with Synopsys DC. There may be many
-warnings, but you should still skim through them. Often times there will be
-something very wrong in your Verilog RTL which means any results from using 
-the ASIC tools is completely bogus. Synopsys DC will output a warning, but 
-Synopsys DC will usually just keep going, potentially producing a completely
-incorrect gate-level model!
+You may see some warnings regarding `clk[0]` and `reset[0]` ports not
+being connected to any nets in certain modules. This is ok, since in
+PyMTL translation we automatically add those ports to all modules, so
+they may not actually be used. Aside from this, you should not see any
+warnings. However, it is _critical_ that you carefully review all
+warnings and errors when you analyze and elaborate a design with Synopsys
+DC. There may be many warnings, but you should still skim through them.
+Often times there will be something very wrong in your Verilog RTL which
+means any results from using the ASIC tools is completely bogus. Synopsys
+DC will output a warning, but Synopsys DC will usually just keep going,
+potentially producing a completely incorrect gate-level model!
 
 We need to create a clock constraint to tell Synopsys DC what our target
 cycle time is. Synopsys DC will not synthesize a design to run "as fast
@@ -849,7 +848,7 @@ contains the name mapping we will use in power analysis.
 ```
  dc_shell> saif_map -create_map \
   -input "../../sim/build/sort-rtl-struct-random.saif" \
-  -source_instance "TOP/SortUnitStructRTL_8bit"
+  -source_instance "TOP/SortUnitStructRTL__nbits_8"
 
  dc_shell> saif_map -type ptpx -write_map "post-synth.namemap"
 ```
@@ -878,7 +877,7 @@ the design. Part of the report is displayed below.
   elm_S0S1__0/out_reg[5]/Q (DFF_X1)                       0.01  0.09  0.09 r
   elm_S0S1__0/out[5] (net)                      2               0.00  0.09 r
   elm_S0S1__0/out[5] (Reg__Type_Bits8_0)                        0.00  0.09 r
-  elm_S0S1__0__out[5] (net)                                     0.00  0.09 r
+  elm_S0S1__out[5] (net)                                        0.00  0.09 r
   minmax0_S1/in0[5] (MinMaxUnit__DataType_Bits8_0)              0.00  0.09 r
   minmax0_S1/in0[5] (net)                                       0.00  0.09 r
   minmax0_S1/U56/ZN (INV_X1)                              0.01  0.03  0.12 f
@@ -920,7 +919,7 @@ design (regardless of whether these paths can actually be used in
 practice) and finds the longest path. For more information about static
 timing analysis, consult Chapter 1 of the [Synopsys Timing Constraints
 and Optimization User
-Guide](http://www.csl.cornell.edu/courses/ece5745/syndocs/tcoug.pdf). The
+Guide](http://www.csl.cornell.edu/courses/ece5745/asicdocs/tcoug.pdf). The
 report clearly shows that the critical path starts at bit 5 of a pipeline
 register in between the S1 and S2 stages (`elm_S0S1__0`), goes into the
 first input of a `MinMaxUnit`, comes out the `out_min` port of the
@@ -979,7 +978,7 @@ enable detailed area breakdown analysis.
  Hierarchical cell  Abs               Non  Black
                     Total  %    Comb  Comb Boxes
  ----------------- ------ ---- ----- ----- ---  -------------------------------
- SortUnitStructRTL  791.0  100   0.0   0.0 0.0  SortUnitStructRTL_8bit
+ SortUnitStructRTL  791.0  100   0.0   0.0 0.0  SortUnitStructRTL__8bit
  elm_S0S1__0         36.1  4.6   0.0  36.1 0.0  Reg__Type_Bits8_0
  elm_S0S1__1         36.1  4.6   0.0  36.1 0.0  Reg__Type_Bits8_11
  elm_S0S1__2         36.1  4.6   0.0  36.1 0.0  Reg__Type_Bits8_10
@@ -1216,7 +1215,7 @@ power and ground nets.
 ```
  innovus> set init_mmmc_file "setup-timing.tcl"
  innovus> set init_verilog   "../synopsys-dc/post-synth.v"
- innovus> set init_top_cell  "SortUnitStructRTL_8bit"
+ innovus> set init_top_cell  "SortUnitStructRTL__nbits_8"
  innovus> set init_lef_file  "$env(ECE5745_STDCELLS)/rtk-tech.lef $env(ECE5745_STDCELLS)/stdcells.lef"
  innovus> set init_gnd_net   "VSS"
  innovus> set init_pwr_net   "VDD"
@@ -1562,7 +1561,7 @@ results will be far more accurate than the post-synthesis results.
  innovus> report_area
   Depth  Name                          #Inst  Area (um^2)
   --------------------------------------------------------
-  0      SortUnitStructRTL_8bit    369    709.688
+  0      SortUnitStructRTL__nbits_8    369    709.688
   1      elm_S1S2__2                   8      36.176
   1      val_S1S2                      3      5.852
   1      minmax0_S1                    58     53.998
@@ -1705,7 +1704,7 @@ valid activity factors included in the `.saif`. For more information
 about this kind of power analysis, consult Chapter 5 (more specifically,
 the section titled "Estimating Non-Annotated Switching Activity" of the
 [PrimeTime PX User
-Guide](http://www.csl.cornell.edu/courses/ece5745/syndocs/ptpx.pdf).
+Guide](http://www.csl.cornell.edu/courses/ece5745/asicdocs/ppug.pdf).
 
 We start by creating a subdirectory for our work, and then launching
 Synopsys PT.
@@ -1745,7 +1744,7 @@ top-level module).
 
 ```
  pt_shell> read_verilog   "../cadence-innovus/post-par.v"
- pt_shell> current_design SortUnitStructRTL_8bit
+ pt_shell> current_design SortUnitStructRTL__nbits_8
  pt_shell> link_design
 ```
 
@@ -1782,7 +1781,7 @@ make sure we do everything we can to ensure as many nets as possible
 match between the `.saif` generated from RTL and the gate-level netlist.
 
 ```
- pt_shell> read_saif "../../sim/build/sort-rtl-struct-random.saif" -strip_path "TOP/SortUnitStructRTL_8bit"
+ pt_shell> read_saif "../../sim/build/sort-rtl-struct-random.saif" -strip_path "TOP/SortUnitStructRTL__nbits_8"
 ```
 
 The `.db` file includes parasitic capacitance estimates for every pin of
@@ -1867,7 +1866,7 @@ consumes in the design.
                              Int      Switch   Leak     Total
  Hierarchy                   Power    Power    Power    Power        %
  ---------------------------------------------------------------------
- SortUnitStructRTL_8bit  1.04e-03 4.27e-04 1.45e-05 1.48e-03 100.0
+ SortUnitStructRTL__nbits_8  1.04e-03 4.27e-04 1.45e-05 1.48e-03 100.0
   elm_S2S3__0 (Reg_4)        6.17e-05 5.74e-07 6.30e-07 6.29e-05   4.3
   elm_S1S2__0 (Reg_8)        6.34e-05 6.60e-06 6.33e-07 7.06e-05   4.8
   elm_S2S3__1 (Reg_3)        6.50e-05 7.91e-06 6.33e-07 7.36e-05   5.0
@@ -1920,7 +1919,7 @@ you will need to read in the new `.saif` file. In other words, use the
 following command:
 
 ```
- pt_shell> read_saif "../../sim/build/sort-rtl-struct-zeros.saif" -strip_path "TOP/SortUnitStructRTL_8bit"
+ pt_shell> read_saif "../../sim/build/sort-rtl-struct-zeros.saif" -strip_path "TOP/SortUnitStructRTL__nbits_8"
 ```
 
 As with Synopsys DC, you can put a sequence of commands in a `.tcl` file
@@ -2010,13 +2009,13 @@ for power analysis.
 ```
 
 Take a moment to open up the translated Verilog which should be in a file
-named `SortUnitFlatRTL__nbits_8__pickled.v`. You might ask, "Why do we need to use
-PyMTL3 to translate the Verilog if we already have the Verilog?" PyMTL3
-will take care of preprocessing all of your Verilog RTL code to ensure it
-is in a single Verilog file. This greatly simplifies getting your design
-into the ASIC flow. This also ensures a one-to-one match between the
-Verilog that was used to generate the VCD file and the Verilog that is
-used in the ASIC flow.
+named `SortUnitFlatRTL__nbits_8__pickled.v`. You might ask, "Why do we
+need to use PyMTL3 to translate the Verilog if we already have the
+Verilog?" PyMTL3 will take care of preprocessing all of your Verilog RTL
+code to ensure it is in a single Verilog file. This greatly simplifies
+getting your design into the ASIC flow. This also ensures a one-to-one
+match between the Verilog that was used to generate the VCD file and the
+Verilog that is used in the ASIC flow.
 
 Once you have tested your design and generated the single Verilog file
 and the VCD file, you can push the design through the ASIC flow using the
@@ -2032,3 +2031,4 @@ corresponding Verilog RTL and VCD file using the GCD Unit simulator,
 generate the corresponding `.saif` file, use Synopsys DC to synthesize
 the design to a gate-level netlist, use Cadence Innovus to
 place-and-route the design, and use Synopsys PT for power analysis.
+

@@ -127,20 +127,6 @@ def main():
       print("\n ERROR: --dump-vtb needs --translate \n")
       exit(1)
 
-  # Make sure the explicit module name is the same in both tut3 and tut4
-
-  model_explicit_name_dict = {
-    # It might be better to query the default parameters of the
-    # construct method of `model`. But at this moment I'm not sure
-    # if we have an API for that...
-    'rtl-flat'   : 'SortUnitFlatRTL_8bit',
-    'rtl-struct' : 'SortUnitStructRTL_8bit',
-  }
-
-  if opts.translate:
-    model.set_metadata( VerilogTranslationPass.explicit_module_name,
-                        model_explicit_name_dict[ opts.impl ] )
-
   # Create VCD filename
 
   unique_name = f"sort-{opts.impl}-{opts.input}"
