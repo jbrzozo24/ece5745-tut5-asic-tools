@@ -578,8 +578,8 @@ tests for the `SortUnitStructRTL` will fail.
 ```
  % mkdir $TOPDIR/sim/build
  % cd $TOPDIR/sim/build
- % py.test ../tut3_pymtl/sort
- % py.test ../tut3_pymtl/sort --test-verilog
+ % pytest ../tut3_pymtl/sort
+ % pytest ../tut3_pymtl/sort --test-verilog
 ```
 
 You can just copy over your implementation of the `MinMaxUnit` from when
@@ -1948,7 +1948,7 @@ implementation of the sort unit.
 ```
  % cd $TOPDIR/sim/build
  % rm -rf *
- % py.test ../tut4_verilog/sort
+ % pytest ../tut4_verilog/sort
 ```
 
 As before, the tests for the `SortUnitStructRTL` will fail. You can just
