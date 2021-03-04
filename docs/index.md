@@ -1416,7 +1416,7 @@ each standard cell row.
  innovus> addFiller
 ```
 
-Zoom in to see some of the detailed routing and take a momment to
+Zoom in to see some of the detailed routing and take a moment to
 appreciate how much effort the tools have done for us automatically to
 synthesize, place, and route this design. The following screen capture
 shows some of this detailed routing.

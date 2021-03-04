@@ -144,7 +144,7 @@ def main():
   # Apply necessary passes
 
   # Create a simulator
-  model.apply( DefaultPassGroup( print_line_trace=opts.trace ) )
+  model.apply( DefaultPassGroup( linetrace=opts.trace ) )
 
   model.sim_reset()
 
