@@ -1,8 +1,8 @@
 #=========================================================================
-# sort
+# gcd
 #=========================================================================
 
-# from .SortUnitCL        import SortUnitCL
-# from .SortUnitFlatRTL   import SortUnitFlatRTL
-# from .SortUnitStructRTL import SortUnitStructRTL
+# from .GcdUnitFL  import GcdUnitFL
+from .GcdUnitCL  import GcdUnitCL
+from .GcdUnitRTL import GcdUnitRTL
 
