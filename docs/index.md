@@ -102,7 +102,7 @@ GitHub, and define an environment variable to keep track of the top
 directory for the project.
 
     % source setup-ece5745.sh
-    % mkdir $HOME/ece5745
+    % mkdir -p $HOME/ece5745
     % cd $HOME/ece5745
     % git clone git@github.com:cornell-ece5745/ece5745-tut5-asic-tools
     % cd ece5745-tut5-asic-tools
@@ -576,7 +576,7 @@ Let's start by running the tests for the sort unit and note that the
 tests for the `SortUnitStructRTL` will fail.
 
 ```
- % mkdir $TOPDIR/sim/build
+ % mkdir -p $TOPDIR/sim/build
  % cd $TOPDIR/sim/build
  % pytest ../tut3_pymtl/sort
  % pytest ../tut3_pymtl/sort --test-verilog
@@ -1953,7 +1953,7 @@ implementation of the sort unit.
 
 As before, the tests for the `SortUnitStructRTL` will fail. You can just
 copy over your implementation of the `MinMaxUnit` from when you completed
-the Verilog tutorial. If you have not completed the PyMTL3 tutorial then
+the Verilog tutorial. If you have not completed the Verilog tutorial then
 you might want to go back and do that now. Basically the `MinMaxUnit`
 should look like this:
 
@@ -1999,8 +1999,8 @@ endmodule
 ```
 
 After running the tests we use the sort unit simulator to translate the
-PyMTL3 RTL model into Verilog and to dump the VCD file that we want to use
-for power analysis.
+Verilog RTL model into Verilog and to dump the VCD file that we want to
+use for power analysis.
 
 ```
  % cd $TOPDIR/sim/build
@@ -2019,7 +2019,9 @@ Verilog that is used in the ASIC flow.
 
 Once you have tested your design and generated the single Verilog file
 and the VCD file, you can push the design through the ASIC flow using the
-exact same steps we used above.
+exact same steps we used above. The PyMTL RTL and Verilog RTL designs
+should show similar results, but obviously they won't be exactly the same
+since the source code is different.
 
 To Do On Your Own
 --------------------------------------------------------------------------
