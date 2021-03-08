@@ -13,7 +13,7 @@ enable students to gain a better understanding of the detailed steps
 involved in this process. The next tutorial will illustrate how this
 process can be automated to facilitate rapid design-space exploration.
 This tutorial assumes you have already completed the tutorials on Linux,
-Git, PyMTL, and Verilog.
+Git, PyMTL, and Verilog. 
 
 You can find the actual tutorial document in the repo here:
 
