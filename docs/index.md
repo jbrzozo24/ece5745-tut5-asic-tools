@@ -502,7 +502,7 @@ power/ground and signal pins. The file also includes information on
 at the NAND4_X4 gate to see an obstruction. These are regions of the cell
 which should not be used by the ASIC tools. For example, if a cell needs
 to use metal 2 (M2), it would create a blockage on M2 so that the ASIC
-tools know now to route any M2 wires in that area. You can use Klayout to
+tools know not to route any M2 wires in that area. You can use Klayout to
 view `.lef` files as well.
 
 ```
