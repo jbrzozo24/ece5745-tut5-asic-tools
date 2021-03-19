@@ -1537,6 +1537,7 @@ You can use the following steps in Cadence Innovus to display where the
 critical path is on the actual chip.
 
  - Choose _Timing > Debug Timing_ from the menu
+ - Click _OK_ in the pop-up window
  - Right click on first path in the _Path List_
  - Choose _Highlight > Only This Path > Color_
 
