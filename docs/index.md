@@ -2102,7 +2102,7 @@ implementation of the sort unit.
 ```bash
  % cd $TOPDIR/sim/build
  % rm -rf *
- % pytest ../tut4_verilog/sort --dump-vtb; #Do we need --test-verilog?
+ % pytest ../tut4_verilog/sort --dump-vtb --test-verilog; 
 ```
 
 As before, the tests for the `SortUnitStructRTL` will fail. You can just

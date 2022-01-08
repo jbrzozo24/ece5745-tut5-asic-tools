@@ -278,7 +278,7 @@ Using Verilog RTL Models:
 ```bash
  % cd $TOPDIR/sim/build
  % rm -rf *
- % pytest ../tut4_verilog/sort --dump-vtb; #Do we need --test-verilog?
+ % pytest ../tut4_verilog/sort --dump-vtb --test-verilog; #Do we need --test-verilog? Yes
 ```
 
 ```
