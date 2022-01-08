@@ -25,17 +25,17 @@ NEW % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-v
 
 ```bash
 # Update directory name ?
-% mkdir -p $TOPDIR/sim/vcs_build
-% cd $TOPDIR/sim/vcs_build
-% mkdir -p $TOPDIR/sim/vcs_build/outputs/vcd
-% mkdir -p $TOPDIR/sim/vcs_build/outputs/saif
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% mkdir -p $TOPDIR/sim/vcs_rtl_build
+% cd $TOPDIR/sim/vcs_rtl_build
+% mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/saif
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 
 
-% cd $TOPDIR/sim/vcs_build/outputs
+% cd $TOPDIR/sim/vcs_rtl_build/outputs
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
 ```
 
@@ -76,7 +76,7 @@ NEW % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-v
  dc_shell> compile
  # generate_results.tcl
  dc_shell> saif_map -create_map \
-                    -input "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" \
+                    -input "../../sim/vcs_rtl_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" \
                     -source_instance "SortUnitStructRTL__nbits_8_tb/DUT"
  dc_shell> saif_map -type ptpx -write_map "post-synth.namemap"
  dc_shell> write -format verilog -hierarchy -output post-synth.v
@@ -101,6 +101,22 @@ NEW % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-v
 
  % cd $TOPDIR/asic-manual/synopsys-dc
  % dc_shell-xg-t -f init.tcl
+
+ ## VCS FF GL sim
+
+```bash
+# Update directory name ?
+% mkdir -p $TOPDIR/sim/vcs_postsyn_build
+% cd $TOPDIR/sim/vcs_postsyn_build
+% mkdir -p $TOPDIR/sim/vcs_postsyn_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_postsyn_build/outputs/saif
+% vcs ../../asic-manual/synopsys-dc/post-synth.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+INPUT_DELAY=0.03 +define+OUTPUT_ASSERT_DELAY=0.03 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% ./simv
+
+
+% cd $TOPDIR/sim/vcs_postsyn_build/outputs
+% vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
+```
 
  ## Cadence Innovus
 ```bash
@@ -180,6 +196,7 @@ Create a file called setup-timing.tcl with:
  innovus> saveNetlist post-par.v
  innovus> extractRC
  innovus> rcOut -rc_corner typical -spef post-par.spef
+ innovus> write_sdf post-par.sdf -interconn all -edges library -recrem split -remashold -recompute_delay_calc 
  innovus> streamOut post-par.gds \
             -merge "$env(ECE5745_STDCELLS)/stdcells.gds" \
             -mapFile "$env(ECE5745_STDCELLS)/rtk-stream-out.map"
@@ -227,7 +244,7 @@ Then run cadence innovus commands:
  pt_shell> create_clock clk -name ideal_clock1 -period 0.6
 
  pt_shell> source ../synopsys-dc/post-synth.namemap
- pt_shell> read_saif "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
+ pt_shell> read_saif "../../sim/vcs_rtl_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
  pt_shell> read_parasitics -format spef "../cadence-innovus/post-par.spef" 
  #report_power.tcl
  pt_shell> update_power
@@ -243,17 +260,17 @@ Then run cadence innovus commands:
  % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --input zeros --stats --translate --dump-vtb
  num_cycles          = 105
  num_cycles_per_sort = 1.05
-% cd $TOPDIR/sim/vcs_build
-% mkdir -p $TOPDIR/sim/vcs_build/outputs/vcd
-% mkdir -p $TOPDIR/sim/vcs_build/outputs/saif
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% cd $TOPDIR/sim/vcs_rtl_build
+% mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/saif
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
-% cd $TOPDIR/sim/vcs_build/outputs
+% cd $TOPDIR/sim/vcs_rtl_build/outputs
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
 ``` 
 
 ```
- pt_shell> read_saif "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
+ pt_shell> read_saif "../../sim/vcs_rtl_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
 ```
 
 Using Verilog RTL Models:

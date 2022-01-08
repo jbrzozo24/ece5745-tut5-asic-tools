@@ -23,3 +23,5 @@ Or online here:
 
  - https://cornell-ece5745.github.io/ece5745-tut5-asic-tools
 
+ - https://jbrzozo24.github.io/ece5745-tut5-asic-tools/
+

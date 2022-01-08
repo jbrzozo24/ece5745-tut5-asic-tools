@@ -2,8 +2,8 @@
 ECE 5745 Tutorial 5: Synopsys/Cadence ASIC Tools
 ==========================================================================
 
- - Author: Christopher Batten
- - Date: March 2, 2021
+ - Author: Christopher Batten, (Updated by Jack Brzozowski)
+ - Date: March 2, 2021 (January 8, 2022)
 
 **Table of Contents**
 
@@ -12,7 +12,9 @@ ECE 5745 Tutorial 5: Synopsys/Cadence ASIC Tools
  - PyMTL3-Based Testing, Simulation, Translation
  - Using Synopsys VCS for 4-State RTL Simulation
  - Using Synopsys Design Compiler for Synthesis
+ - Using Synopsys VCS for Fast Functional Gate-Level Simulation
  - Using Cadence Innovus for Place-and-Route
+ - Using Synopsys VCS for Back-Annotated Gate-Level Simulation
  - Using Synopsys PrimeTime for Power Analysis
  - Using Verilog RTL Models
  - To Do On Your Own
@@ -706,15 +708,15 @@ You may notice in your designs that you are passing all 2-state simulations, but
 To create a 4-state simulation, let's start by creating another build directory for our vcs work. 
 
 ```bash
-% mkdir -p $TOPDIR/sim/vcs_build
-% cd $TOPDIR/sim/vcs_build
+% mkdir -p $TOPDIR/sim/vcs_rtl_build
+% cd $TOPDIR/sim/vcs_rtl_build
 ```
 
 Then, let's set up an output folder where we'll tell vcs to dump our `.vcd` file. We run vcs to compile a simulation, and ./simv to run the simulation. Let's do a 4-state simulation for `test_basic` using the design `SortUnitStructRTL__nbits_8__pickled.v`.
 
 ```bash
-% mkdir -p $TOPDIR/sim/vcs_build/outputs/vcd
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -735,7 +737,7 @@ Synopsys VCS is an extremely in-depth tool with many command line options. If yo
 Let's run another 4-state simulation, this time using the testbench from the sort-rtl simulator run that we ran earlier, so we can obtain the vcd file that we want to use for power analysis.
 
 ```bash
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -744,10 +746,12 @@ design on every cycle. This can make these `.vcd` files very large and
 thus slow to analyze. For average power analysis, we only need to know
 the activity factor on each net. We can use the `vcd2saif` tool to
 convert `.vcd` files into `.saif` files. An `.saif` file only contains a
-single average activity factor for every net.
+single average activity factor for every net. We also create the directory 
+where we'll dump the saif files.
 
 ```
-% cd $TOPDIR/sim/vcs_build/outputs
+% cd $TOPDIR/sim/vcs_rtl_build/outputs
+% mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/saif
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
 ```
 
@@ -909,7 +913,9 @@ likely produce higher quality of results. Keep in mind that the `compile`
 command _will not_ flatten your design by default, while the
 `compile_ultra` command _will_ flattened your design by default. You can
 turn off flattening by using the `-no_autoungroup` option with the
-`compile_ultra` command. Once you finish this tutorial, feel free to go
+`compile_ultra` command. `compile_ultra` also has the option `-gate_clock`
+which automatically performs clock gating on your design, which can save 
+quite a bit of power. Once you finish this tutorial, feel free to go
 back and experiment with the `compile_ultra` command.
 
 The next step is to create and then output the `.namemap` file which
@@ -917,7 +923,7 @@ contains the name mapping we will use in power analysis.
 
 ```
 dc_shell> saif_map -create_map \
-                    -input "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" \
+                    -input "../../sim/vcs_rtl_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" \
                     -source_instance "SortUnitStructRTL__nbits_8_tb/DUT"
 
  dc_shell> saif_map -type ptpx -write_map "post-synth.namemap"
@@ -1171,6 +1177,36 @@ like this:
 So consider placing the commands from this section into a `.tcl` file
 and then running Synopsys DC with a target clock period of 0.3ns. Then
 gradually increase the clock period until your design meets timing.
+
+Using Synopsys VCS for Fast Functional Gate-Level Simulation
+--------------------------------------------------------------------------
+
+Before synthesis, we used Synopsys VCS to do a 4-state simulation. This time, we'll be using VCS to perform a gate-level simulation, since we now have a gate-level netlist available to us. {TODO motivate gate-level simulation}. 
+
+We'll start by creating a build directory for our post-synth run of vcs, and output directories for the `.vcd` and `.saif` that we'll generate for power analysis. 
+
+```bash
+% mkdir -p $TOPDIR/sim/vcs_postsyn_build
+% cd $TOPDIR/sim/vcs_postsyn_build
+% mkdir -p $TOPDIR/sim/vcs_postsyn_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_postsyn_build/outputs/saif
+```
+
+Then we'll run vcs and ./simv to run our gate-level simulation on the sort-rtl-struct-random simulator testbench:
+
+```bash 
+% vcs ../../asic-manual/synopsys-dc/post-synth.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% ./simv
+```
+
+Notice there are some differences in the vcs command we ran here, and the one we ran for 4-state RTL simulation. In this version, we use the gate-level netlist `post-synth.v` instead of the pickled file. We also add the flags `+neg_tchk` and `-hsopt=gates`, which enables negative values in timing checks, and improves runtime for gate-level simulations, respectively. Negative values in timing checks are important for cells which have negative hold times, for example.
+
+Again, we generate a `.saif` file using `vcd2saif` to be used later for power analysis. 
+
+```bash
+% cd $TOPDIR/sim/vcs_postsyn_build/outputs
+% vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
+```
 
 Using Cadence Innovus for Place-and-Route
 --------------------------------------------------------------------------
@@ -1539,6 +1575,12 @@ timing and/or power analysis.
 You may get an error regarding open nets. This is actually more of a warning
 message, and for the purposes of RC extraction we can ignore this.
 
+We also need to extract delay information and write this to an `.sdf`(Standard Delay Format) file, which we'll use for our back-annotated gate-level simulations. 
+
+```
+ innovus> write_sdf post-par.sdf -interconn all -edges library -recrem split -remashold -recompute_delay_calc 
+```
+
 Finally, we of course need to generate the real layout as a `.gds` file. This
 is what we will send to the foundry when we are ready to tapeout the
 chip.
@@ -1734,6 +1776,34 @@ can make interacting with the tool much faster. So consider placing the
 commands from this section into a `.tcl` file to make it easy to rerun
 Cadence Innovus.
 
+Using Synopsys VCS for Back-Annotated Gate-Level Simulation
+--------------------------------------------------------------------------
+{TODO review this write up}
+Before place and route, we used Synopsys VCS to do 4-state simulation, and gate-level simulation. This time, we'll be using VCS to perform a back-annotated gate-level simulation. The key difference between the previous gate-level simulation and this one is that in this case, we'll be using an `.sdf` file to annotate delays in the gate-level simulation. In previous simulations, we only see signals change on the clock edge; however, with a back-annotated simulation, we'll know more precisely when signals are arriving, by using the delay information provided by the `.sdf`. This means that running a back-annotated simulation with a cycle time that is too fast will cause the design to fail! Back-annotated simulations are also useful for detecting hold-time violations. 
+
+Given the more realistic timing implications of a back-annotated simulation, we need to be more careful about the cycle time, input delay, and output delay that we provide to vcs. We'll start by creating a build directory for our post-synth run of vcs, and output directories for the `.vcd` and `.saif` that we'll generate for power analysis. 
+
+```bash
+% mkdir -p $TOPDIR/sim/vcs_postpnr_build
+% cd $TOPDIR/sim/vcs_postpnr_build
+% mkdir -p $TOPDIR/sim/vcs_postpnr_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_postpnr_build/outputs/saif
+```
+
+Then we'll run vcs and ./simv to run our gate-level simulation on the sort-rtl-struct-random simulator testbench. Notice the differences between this command and the fast functional gate-level simulation command:
+
+```bash 
+% vcs ../../asic-manual/cadence-innovus/post-par.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf=max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+INPUT_DELAY=0.03 +define+OUTPUT_ASSERT_DELAY=0.03 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% ./simv
+```
+This time, we include the `+sdfverbose` flag which reads in the `post-par.sdf`. Note that we also assign non-zero values for `+define+INPUT_DELAY` and `+define+OUTPUT_ASSERT_DELAY`. These values are based on the input and output delays we set during the Synopsys DC synthesis step which you might recall was `0.05*clock_period`. Including this will ensure that our timing checks will actually mean something. Without this, our timing checks will be totally bogus, because remember, garbage in = garbage out. Again, we generate a `.saif` file using `vcd2saif` to be used later for power analysis. 
+
+```bash
+% cd $TOPDIR/sim/vcs_postpnr_build/outputs
+% vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
+```
+
+
 Using Synopsys PrimeTime for Power Analysis
 --------------------------------------------------------------------------
 
@@ -1855,7 +1925,7 @@ make sure we do everything we can to ensure as many nets as possible
 match between the `.saif` generated from RTL and the gate-level netlist.
 
 ```
- pt_shell> read_saif "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
+ pt_shell> read_saif "../../sim/vcs_rtl_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
 ```
 
 The `.db` file includes parasitic capacitance estimates for every pin of
@@ -1984,12 +2054,12 @@ to the sort unit are zeros.
  % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --input zeros --stats --translate --dump-vtb
  num_cycles          = 105
  num_cycles_per_sort = 1.05
-% cd $TOPDIR/sim/vcs_build
-% mkdir -p $TOPDIR/sim/vcs_build/outputs/vcd
-% mkdir -p $TOPDIR/sim/vcs_build/outputs/saif
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% cd $TOPDIR/sim/vcs_rtl_build
+% mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/saif
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
-% cd $TOPDIR/sim/vcs_build/outputs
+% cd $TOPDIR/sim/vcs_rtl_build/outputs
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
 ``` 
 
@@ -1999,7 +2069,7 @@ you will need to read in the new `.saif` file. In other words, use the
 following command:
 
 ```
- pt_shell> read_saif "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
+ pt_shell> read_saif "../../sim/vcs_rtl_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
 ```
 
 As with Synopsys DC, you can put a sequence of commands in a `.tcl` file
@@ -2012,6 +2082,9 @@ and then run Synopsys PT using those commands in one step like this:
 
 So consider placing the commands from this section into a `.tcl` file to
 make it easy to rerun Synopsys PT.
+
+**To Do On Your Own:** You can also run a more accurate power analysis by using the saif files generated from gate-level simulation. In gate-level simulations, the saif file has all of the nets present in the gate-level netlist, so we no longer need the `.namemap` file we used for power analysis of the RTL simulation. We just need to change which `.saif` file we read, and to remove the command where we source the namemap, and you should be able to get a gate-level simulation power analysis. Again, consider placing the commands from this section into a `.tcl` file to make it easy to rerun Synopsys PT. Experiment with this to get a sense for how accurate the RTL power analysis was compared to the back-annotated gate-level simulation's power analysis. Is it what you expected? 
+
 
 Using Verilog RTL Models
 --------------------------------------------------------------------------
