@@ -10,6 +10,7 @@ ECE 5745 Tutorial 5: Synopsys/Cadence ASIC Tools
  - Introduction
  - Nangate 45nm Standard-Cell Library
  - PyMTL3-Based Testing, Simulation, Translation
+ - Using Synopsys VCS for 4-State RTL Simulation
  - Using Synopsys Design Compiler for Synthesis
  - Using Cadence Innovus for Place-and-Route
  - Using Synopsys PrimeTime for Power Analysis
@@ -579,7 +580,7 @@ tests for the `SortUnitStructRTL` will fail.
  % mkdir -p $TOPDIR/sim/build
  % cd $TOPDIR/sim/build
  % pytest ../tut3_pymtl/sort
- % pytest ../tut3_pymtl/sort --test-verilog
+ % pytest ../tut3_pymtl/sort --test-verilog --dump-vtb
 ```
 
 You can just copy over your implementation of the `MinMaxUnit` from when
@@ -618,16 +619,16 @@ class MinMaxUnit( Component ):
 ```
 
 The `--test-verilog` command line option tells the PyMTL3 framework to
-first translate the sort unit into Verilog, and then important it back
+first translate the sort unit into Verilog, and then import it back
 into PyMTL3 to verify that the translated Verilog is itself correct. With
 the `--test-verilog` command line option, PyMTL3 will skip tests that are
 not for verifying RTL. After running the tests we use the sort unit
-simulator to do the final translation into Verilog and to dump the `.vcd`
-(Value Change Dump) file that we want to use for power analysis.
+simulator to do the final translation into Verilog and to dump the `vtb`
+(Verilog TestBench) file that will allow us to do 4-state RTL simulation using Synopsys VCS.
 
 ```
  % cd $TOPDIR/sim/build
- % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-vcd
+ % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-vtb
  num_cycles          = 106
  num_cycles_per_sort = 1.06
 ```
@@ -692,6 +693,52 @@ other steps are going wrong. While we try and make things as automated as
 possible, students will eventually need to dig in and debug some of these
 steps themselves.
 
+Using Synopsys VCS for 4-state RTL simulation
+-------------------------------------------------------------------------
+
+Using the PyMTL simulation framework can give us a good foundation in verifying a design. However, the PyMTL RTL simulation is only a 2-state simulation, meaning a signal can only be `0` or `1`. An alternative form of RTL simulation is a 4-state simulation, in which signals can be `0`, `1`, `x`, or `z`. {TODO add paragraph about advantages of 4-state simulation}
+
+It is important to note a key difference between 2-state and 4-state simulation. In 2-state simulation, each variable is initialized to a determined value. This initial condition assumption may or may not be what happens in actual silicon! As a result, a different initial condition could introduce a bug that was not caught by our PyMTL3 2-state RTL simulation. In 4-state simulations no such assumptions are made. Instead, every signal begins as `x`, and only resolves to a `0` or `1` after it is driven or resolved using x-propagation. {TODO add paragraph about x propagation?} 
+
+
+You may notice in your designs that you are passing all 2-state simulations, but fail every 4-state simulation. Oftentimes the key to this is that output is an `x` for some cycle. We consider it best practice to reset output registers to zero on a reset, but also to `&` invalid output data with `0`, so you can have a deterministic output for every cycle of your test.
+
+To create a 4-state simulation, let's start by creating another build directory for our vcs work. 
+
+```bash
+% mkdir -p $TOPDIR/sim/vcs_build
+% cd $TOPDIR/sim/vcs_build
+```
+
+Then, let's set up an output folder where we'll tell vcs to dump our `.vcd` file. We run vcs to compile a simulation, and ./simv to run the simulation. Let's do a 4-state simulation for `test_basic` using the design `SortUnitStructRTL__nbits_8__pickled.v`.
+
+```bash
+% mkdir -p $TOPDIR/sim/vcs_build/outputs/vcd
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% ./simv
+```
+
+Synopsys VCS is an extremely in-depth tool with many command line options. If you want to learn more on your own about other options that are available to you with VCS, you can visit the course webpage [here](https://www.csl.cornell.edu/courses/ece5745/asicdocs/index.html). However, we've detailed some of the key command line options below:
+
+```
+../build/SortUnitStructRTL__nbits_8__pickled.v        -The path to the source RTL file
+-sverilog                                             -Indicates that we are using SystemVerilog
++incdir+../build                                      -Specifies directories that contain files that are tagged with `include. We include ../build because our VTB
+                                                       includes a _tb.v.cases file located within the ../build directory
+-xprop=tmerge                                         -Specifies that we want to use the tmerge truth table for x-propagation
+-top SortUnitStructRTL__nbits_8_tb                    -Indicates the name of the top module (located within the VTB)
+../build/SortUnitStructRTL__nbits_8_test_basic_tb.v   -The path to the source testbench file
++vcs+dumpvars+outputs/vcd/<filename>.vcd              -Tells VCS to dump a VCD in the location ./outputs/vcd with the name <filename>.vcd
+-override_timescale=1ns/1ns                           -Changes the timescale. Units/precision
+```
+
+Let's run another 4-state simulation, this time using the testbench from the sort-rtl simulator run that we ran earlier, so we can obtain the vcd file that we want to use for power analysis.
+
+```bash
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% ./simv
+```
+
 The `.vcd` file contains information about the state of every net in the
 design on every cycle. This can make these `.vcd` files very large and
 thus slow to analyze. For average power analysis, we only need to know
@@ -700,8 +747,8 @@ convert `.vcd` files into `.saif` files. An `.saif` file only contains a
 single average activity factor for every net.
 
 ```
- % cd $TOPDIR/sim/build
- % vcd2saif -input sort-rtl-struct-random.verilator1.vcd -output sort-rtl-struct-random.saif
+% cd $TOPDIR/sim/vcs_build/outputs
+% vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
 ```
 
 Using Synopsys Design Compiler for Synthesis

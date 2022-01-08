@@ -8,7 +8,7 @@
 
 .\#*
 scripts/work
-build*/
+*build*/
 autom4te.cache/
 __pycache__/
 */.pytest_cache
