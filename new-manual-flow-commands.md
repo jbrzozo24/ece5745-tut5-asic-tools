@@ -81,7 +81,7 @@ NEW % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-v
  dc_shell> saif_map -type ptpx -write_map "post-synth.namemap"
  dc_shell> write -format verilog -hierarchy -output post-synth.v
  dc_shell> write -format ddc     -hierarchy -output post-synth.ddc
- dc_shell> write_sdc -nosplit post-synth.sdc
+ dc_shell> write_sdc -nosplit post-synth.sdc; # DIDNT INCLUDE IN MANUAL TUT BC POWER AND INNOVUS MAKE THEIR OWN, NEED TO TEST THIS SINCE WE ADDED INPUT DELAY AND STUFF. My guess is that we'll need to have this command, and modify the power and innovus manual steps to read in this sdc. We should also make sure the sort unit meets timing. 
  # reporting.tcl
  dc_shell> report_timing -nosplit -transition_time -nets -attributes
  dc_shell> report_area -nosplit -hierarchy
@@ -234,6 +234,37 @@ Then run cadence innovus commands:
  pt_shell> report_power -nosplit
  pt_shell> report_power -nosplit -hierarchy
  pt_shell> exit
+```
 
+ To do on your own:
 
+```
+ % cd $TOPDIR/sim/build
+ % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --input zeros --stats --translate --dump-vtb
+ num_cycles          = 105
+ num_cycles_per_sort = 1.05
+% cd $TOPDIR/sim/vcs_build
+% mkdir -p $TOPDIR/sim/vcs_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_build/outputs/saif
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% ./simv
+% cd $TOPDIR/sim/vcs_build/outputs
+% vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
+``` 
 
+```
+ pt_shell> read_saif "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
+```
+
+Using Verilog RTL Models:
+
+```bash
+ % cd $TOPDIR/sim/build
+ % rm -rf *
+ % pytest ../tut4_verilog/sort --dump-vtb; #Do we need --test-verilog?
+```
+
+```
+ % cd $TOPDIR/sim/build
+ % ../tut4_verilog/sort/sort-sim --impl rtl-struct --stats --translate --dump-vtb
+ ```

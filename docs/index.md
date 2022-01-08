@@ -825,6 +825,42 @@ various registers and/or advanced data-path components.
  dc_shell> elaborate SortUnitStructRTL__nbits_8
 ```
 
+We need to create a clock constraint to tell Synopsys DC what our target
+cycle time is. Synopsys DC will not synthesize a design to run "as fast
+as possible". Instead, the designer gives Synopsys DC a target cycle time
+and the tool will try to meet this constraint while minimizing area and
+power. The `create_clock` command takes the name of the clock signal in
+the Verilog (which in this course will always be `clk`), the label to
+give this clock (i.e., `ideal_clock1`), and the target clock period in
+nanoseconds. So in this example, we are asking Synopsys DC to see if it
+can synthesize the design to run at 3GHz (i.e., a cycle time of 300ps).
+
+```
+ dc_shell> create_clock clk -name ideal_clock1 -period 0.3
+```
+{TODO explain the following set of commands here}
+```
+ dc_shell> set_input_delay -clock ideal_clock1 [expr 0.3*0.05] [all_inputs]
+ dc_shell> set_output_delay -clock ideal_clock1 [expr 0.3*0.05] [all_outputs]
+ dc_shell> set_max_fanout 20 SortUnitStructRTL__nbits_8
+ dc_shell> set_max_transition [expr 0.25*0.3] SortUnitStructRTL__nbits_8
+```
+
+{TODO explain the path groups here, and add a figure}
+
+```
+ dc_shell> set ports_clock_root [filter_collection \
+                       [get_attribute [get_clocks] sources] \
+                       object_class==port]
+ dc_shell> group_path -name REGOUT \
+                      -to   [all_outputs]
+ dc_shell> group_path -name REGIN \
+                      -from [remove_from_collection [all_inputs] $ports_clock_root]
+ dc_shell> group_path -name FEEDTHROUGH \
+                      -from [remove_from_collection [all_inputs] $ports_clock_root] \
+                      -to   [all_outputs]
+```
+
 We can use the `check_design` command to make sure there are no obvious
 errors in our Verilog RTL.
 
@@ -844,19 +880,6 @@ means any results from using the ASIC tools is completely bogus. Synopsys
 DC will output a warning, but Synopsys DC will usually just keep going,
 potentially producing a completely incorrect gate-level model!
 
-We need to create a clock constraint to tell Synopsys DC what our target
-cycle time is. Synopsys DC will not synthesize a design to run "as fast
-as possible". Instead, the designer gives Synopsys DC a target cycle time
-and the tool will try to meet this constraint while minimizing area and
-power. The `create_clock` command takes the name of the clock signal in
-the Verilog (which in this course will always be `clk`), the label to
-give this clock (i.e., `ideal_clock1`), and the target clock period in
-nanoseconds. So in this example, we are asking Synopsys DC to see if it
-can synthesize the design to run at 3GHz (i.e., a cycle time of 300ps).
-
-```
- dc_shell> create_clock clk -name ideal_clock1 -period 0.3
-```
 
 Finally, the `compile` command will do the synthesis.
 
@@ -893,16 +916,16 @@ The next step is to create and then output the `.namemap` file which
 contains the name mapping we will use in power analysis.
 
 ```
- dc_shell> saif_map -create_map \
-  -input "../../sim/build/sort-rtl-struct-random.saif" \
-  -source_instance "TOP/SortUnitStructRTL__nbits_8"
+dc_shell> saif_map -create_map \
+                    -input "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" \
+                    -source_instance "SortUnitStructRTL__nbits_8_tb/DUT"
 
  dc_shell> saif_map -type ptpx -write_map "post-synth.namemap"
 ```
 
 Now that we have synthesized the design, we output the resulting
 gate-level netlist in two different file formats: Verilog and `.ddc`
-(which we will use with Synopsys DesignVision).
+(which we will use with Synopsys DesignVision). 
 
 ```
  dc_shell> write -format verilog -hierarchy -output post-synth.v
@@ -913,6 +936,7 @@ We can use various commands to generate reports about area, energy, and
 timing. The `report_timing` command will show the critical path through
 the design. Part of the report is displayed below.
 
+{TODO update snippets on reports to reflect a new build with the new tutorial}
 ```
  dc_shell> report_timing -nosplit -transition_time -nets -attributes
   ...
@@ -1727,6 +1751,8 @@ on the gate-level netlist generated after place-and-route. These kind of
 gate-level simulations can be very, very slow and are tedious to setup
 correctly.
 
+{TODO change this paragraph bc we are using gate-level sim}
+
 In this course, we will use a simpler approach that is slightly less
 accurate than gate-level simulation. We will use the per-net activity
 factors from the RTL simulation which were stored in an `.saif` file
@@ -1829,7 +1855,7 @@ make sure we do everything we can to ensure as many nets as possible
 match between the `.saif` generated from RTL and the gate-level netlist.
 
 ```
- pt_shell> read_saif "../../sim/build/sort-rtl-struct-random.saif" -strip_path "TOP/SortUnitStructRTL__nbits_8"
+ pt_shell> read_saif "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
 ```
 
 The `.db` file includes parasitic capacitance estimates for every pin of
@@ -1955,11 +1981,17 @@ to the sort unit are zeros.
 
 ```
  % cd $TOPDIR/sim/build
- % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --input zeros --stats --translate --dump-vcd
+ % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --input zeros --stats --translate --dump-vtb
  num_cycles          = 105
  num_cycles_per_sort = 1.05
- % vcd2saif -input sort-rtl-struct-zeros.verilator1.vcd -output sort-rtl-struct-zeros.saif
-```
+% cd $TOPDIR/sim/vcs_build
+% mkdir -p $TOPDIR/sim/vcs_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_build/outputs/saif
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% ./simv
+% cd $TOPDIR/sim/vcs_build/outputs
+% vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
+``` 
 
 Do you think a stream of random data will consume more or less power
 compared to a stream of zeros? Rerun Synopsys PT to find out. This means
@@ -1967,7 +1999,7 @@ you will need to read in the new `.saif` file. In other words, use the
 following command:
 
 ```
- pt_shell> read_saif "../../sim/build/sort-rtl-struct-zeros.saif" -strip_path "TOP/SortUnitStructRTL__nbits_8"
+ pt_shell> read_saif "../../sim/vcs_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
 ```
 
 As with Synopsys DC, you can put a sequence of commands in a `.tcl` file
@@ -1993,10 +2025,11 @@ import feature described in the Verilog tutorial to make all of this
 work. The following commands will run all of the tests on the _Verilog_
 implementation of the sort unit.
 
-```
+{TODO check the need for test-verilog}
+```bash
  % cd $TOPDIR/sim/build
  % rm -rf *
- % pytest ../tut4_verilog/sort
+ % pytest ../tut4_verilog/sort --dump-vtb; #Do we need --test-verilog?
 ```
 
 As before, the tests for the `SortUnitStructRTL` will fail. You can just
@@ -2052,9 +2085,8 @@ use for power analysis.
 
 ```
  % cd $TOPDIR/sim/build
- % ../tut4_verilog/sort/sort-sim --impl rtl-struct --stats --translate --dump-vcd
- % vcd2saif -input sort-rtl-struct-random.verilator1.vcd -output sort-rtl-struct-random.saif
-```
+ % ../tut4_verilog/sort/sort-sim --impl rtl-struct --stats --translate --dump-vtb
+ ```
 
 Take a moment to open up the translated Verilog which should be in a file
 named `SortUnitFlatRTL__nbits_8__pickled.v`. You might ask, "Why do we
