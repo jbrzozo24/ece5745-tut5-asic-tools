@@ -37,7 +37,7 @@ The following diagram illustrates the five primary tools we will be using
 in ECE 5745 along with a few smaller secondary tools. Notice that the
 ASIC tools all require various views from the standard-cell library.
 
-![](assets/fig/ECE-5745-Block-Flow.png)
+![](assets/fig/ECE5745-Block-Flow.png)
 
  1. We use the PyMTL3 framework to test, verify, and evaluate the
     execution time (in cycles) of our design. This part of the flow is
@@ -705,12 +705,11 @@ steps themselves.
 Using Synopsys VCS for 4-state RTL simulation
 -------------------------------------------------------------------------
 
-Using the PyMTL simulation framework can give us a good foundation in verifying a design. However, the PyMTL RTL simulation is only a 2-state simulation, meaning a signal can only be `0` or `1`. An alternative form of RTL simulation is a 4-state simulation, in which signals can be `0`, `1`, `x`, or `z`. {TODO add paragraph about advantages of 4-state simulation}
+Using the PyMTL simulation framework can give us a good foundation in verifying a design. However, the PyMTL RTL simulation that you may be accustomed to in ECE 4750 is only a 2-state simulation, meaning a signal can only be `0` or `1`. An alternative form of RTL simulation is a 4-state simulation, in which signals can be `0`, `1`, `x`, or `z`. 
 
 It is important to note a key difference between 2-state and 4-state simulation. In 2-state simulation, each variable is initialized to a determined value. This initial condition assumption may or may not be what happens in actual silicon! As a result, a different initial condition could introduce a bug that was not caught by our PyMTL3 2-state RTL simulation. In 4-state simulations no such assumptions are made. Instead, every signal begins as `x`, and only resolves to a `0` or `1` after it is driven or resolved using x-propagation. {TODO add paragraph about x propagation?} 
 
-
-You may notice in your designs that you are passing all 2-state simulations, but fail every 4-state simulation. Oftentimes the key to this is that output is an `x` for some cycle. We consider it best practice to reset output registers to zero on a reset, but also to `&` invalid output data with `0`, so you can have a deterministic output for every cycle of your test.
+You may notice in your designs that you are passing all 2-state simulations, but fail every 4-state simulation. Oftentimes the key to this is that an output is an `x` for some cycle. We consider it best practice to force invalid output data to zero, to avoid `x`'s in your 4-state simulation, and provide a deterministic output for every cycle no matter the initial condition. 
 
 To create a 4-state simulation, let's start by creating another build directory for our vcs work. 
 
@@ -719,7 +718,7 @@ To create a 4-state simulation, let's start by creating another build directory 
 % cd $TOPDIR/sim/vcs_rtl_build
 ```
 
-Then, let's set up an output folder where we'll tell vcs to dump our `.vcd` file. We run vcs to compile a simulation, and ./simv to run the simulation. Let's do a 4-state simulation for `test_basic` using the design `SortUnitStructRTL__nbits_8__pickled.v`.
+Then, let's set up an output folder where we'll tell vcs to dump our `.vcd` file. We run vcs to compile a simulation, and ./simv to run the simulation. Let's run a 4-state simulation for `test_basic` using the design `SortUnitStructRTL__nbits_8__pickled.v`.
 
 ```bash
 % mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
@@ -737,6 +736,7 @@ Synopsys VCS is an extremely in-depth tool with many command line options. If yo
 -xprop=tmerge                                         -Specifies that we want to use the tmerge truth table for x-propagation
 -top SortUnitStructRTL__nbits_8_tb                    -Indicates the name of the top module (located within the VTB)
 ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v   -The path to the source testbench file
++define+<macro>                                       -defines a macro that may be used in your verilog code or testbench
 +vcs+dumpvars+outputs/vcd/<filename>.vcd              -Tells VCS to dump a VCD in the location ./outputs/vcd with the name <filename>.vcd
 -override_timescale=1ns/1ns                           -Changes the timescale. Units/precision
 ```
@@ -844,20 +844,42 @@ power. The `create_clock` command takes the name of the clock signal in
 the Verilog (which in this course will always be `clk`), the label to
 give this clock (i.e., `ideal_clock1`), and the target clock period in
 nanoseconds. So in this example, we are asking Synopsys DC to see if it
-can synthesize the design to run at 3GHz (i.e., a cycle time of 300ps).
+can synthesize the design to run at 1.67GHz (i.e., a cycle time of 600ps).
 
 ```
- dc_shell> create_clock clk -name ideal_clock1 -period 0.3
+ dc_shell> create_clock clk -name ideal_clock1 -period 0.6
 ```
 {TODO explain the following set of commands here}
+In an ideal world, all inputs and outputs would change immediately with 
+the clock edge. In reality, this is not the case. We need to include 
+reasonable delays for inputs and outputs, so Synopsys DC can factor this 
+into its timing analysis so we would still meet timing if we were to tape 
+our design out in real silicon. Here, we choose 5% of the clock period for 
+our input and output delays. 
+
 ```
- dc_shell> set_input_delay -clock ideal_clock1 [expr 0.3*0.05] [all_inputs]
- dc_shell> set_output_delay -clock ideal_clock1 [expr 0.3*0.05] [all_outputs]
+ dc_shell> set_input_delay -clock ideal_clock1 [expr 0.6*0.05] [all_inputs]
+ dc_shell> set_output_delay -clock ideal_clock1 [expr 0.6*0.05] [all_outputs]
+```
+Next, we give Synopsys DC some constraints about fanout and transition slew. 
+Fanout roughly describes the number of inputs driven by a particular output, 
+and the higher the fanout, the higher the drive strength required. Slew rate 
+is how quickly a signal can make a full transition. We want all of our signals 
+to meet a good slew, meaning that they can transition quickly, so we set 
+maximum slew to one quarter of the clock period. 
+
+```
  dc_shell> set_max_fanout 20 SortUnitStructRTL__nbits_8
- dc_shell> set_max_transition [expr 0.25*0.3] SortUnitStructRTL__nbits_8
+ dc_shell> set_max_transition [expr 0.25*0.6] SortUnitStructRTL__nbits_8
 ```
 
 {TODO explain the path groups here, and add a figure}
+We set up path groups to help Synopsys DC's timing engine. The path group 
+REGOUT starts at a register and ends at an output port. REGIN starts at an 
+input port and ends at a register. FEEDTHROUGH paths start at an input port 
+and end at an output port. 
+
+![](assets/fig/Path-Groups.png)
 
 ```
  dc_shell> set ports_clock_root [filter_collection \
@@ -947,9 +969,9 @@ gate-level netlist in two different file formats: Verilog and `.ddc`
 
 We can use various commands to generate reports about area, energy, and
 timing. The `report_timing` command will show the critical path through
-the design. Part of the report is displayed below.
+the design. Part of the report is displayed below. Note that this report
+was generated using a clock constraint of 300ps.
 
-{TODO update snippets on reports to reflect a new build with the new tutorial}
 ```
  dc_shell> report_timing -nosplit -transition_time -nets -attributes
   ...
