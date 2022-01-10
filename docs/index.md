@@ -1808,7 +1808,7 @@ Cadence Innovus.
 Using Synopsys VCS for Back-Annotated Gate-Level Simulation
 --------------------------------------------------------------------------
 {TODO review this write up}
-Before place and route, we used Synopsys VCS to do 4-state simulation, and gate-level simulation. This time, we'll be using VCS to perform a back-annotated gate-level simulation. The key difference between the previous gate-level simulation and this one is that in this case, we'll be using an `.sdf` file to annotate delays in the gate-level simulation. In previous simulations, we only see signals change on the clock edge; however, with a back-annotated simulation, we'll know more precisely when signals are arriving, by using the delay information provided by the `.sdf`. This means that running a back-annotated simulation with a cycle time that is too fast will cause the design to fail! Back-annotated simulations are also useful for detecting hold-time violations. 
+Before place and route, we used Synopsys VCS to do 4-state simulation, and gate-level simulation. This time, we'll be using VCS to perform a back-annotated gate-level simulation. The key difference between the previous gate-level simulation and this one is that in this case, we'll be using an `.sdf` file to annotate delays in the gate-level simulation. In previous simulations, we only see signals change on the clock edge; however, with a back-annotated simulation, we'll know more precisely when signals are arriving by using the delay information provided by the `.sdf`. This means that running a back-annotated simulation with a cycle time that is too fast will cause the design to fail! Back-annotated simulations are also useful for detecting hold-time violations. 
 
 Given the more realistic timing implications of a back-annotated simulation, we need to be more careful about the cycle time, input delay, and output delay that we provide to vcs. We'll start by creating a build directory for our post-synth run of vcs, and output directories for the `.vcd` and `.saif` that we'll generate for power analysis. 
 
@@ -1831,7 +1831,6 @@ This time, we include the `+sdfverbose` flag which reads in the `post-par.sdf`. 
 % cd $TOPDIR/sim/vcs_postpnr_build/outputs
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
 ```
-
 
 Using Synopsys PrimeTime for Power Analysis
 --------------------------------------------------------------------------
@@ -2127,7 +2126,6 @@ import feature described in the Verilog tutorial to make all of this
 work. The following commands will run all of the tests on the _Verilog_
 implementation of the sort unit.
 
-{TODO check the need for test-verilog}
 ```bash
  % cd $TOPDIR/sim/build
  % rm -rf *
