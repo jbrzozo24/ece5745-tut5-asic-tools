@@ -26,18 +26,18 @@ This tutorial will discuss the various views that make-up a standard-cell
 library and then illustrate how to use a set of Synopsys and Cadence ASIC
 tools to map an RTL design down to these standard cells and ultimately
 silicon. The tutorial will discuss the key tools used for synthesis,
-place-and-route, and power analysis. This tutorial requires entering
-commands manually for each of the tools to enable students to gain a
-better understanding of the detailed steps involved in this process. The
-next tutorial will illustrate how this process can be automated to
-facilitate rapid design-space exploration. This tutorial assumes you have
-already completed the tutorials on Linux, Git, PyMTL3, and Verilog.
+place-and-route, simulation, and power analysis. This tutorial requires 
+entering commands manually for each of the tools to enable students to gain 
+a better understanding of the detailed steps involved in this process. The 
+next tutorial will illustrate how this process can be automated to facilitate 
+rapid design-space exploration. This tutorial assumes you have already 
+completed the tutorials on Linux, Git, PyMTL3, and Verilog.
 
-The following diagram illustrates the four primary tools we will be using
+The following diagram illustrates the five primary tools we will be using
 in ECE 5745 along with a few smaller secondary tools. Notice that the
 ASIC tools all require various views from the standard-cell library.
 
-![](assets/fig/asic-flow.png)
+![](assets/fig/ECE-5745-Block-Flow.png)
 
  1. We use the PyMTL3 framework to test, verify, and evaluate the
     execution time (in cycles) of our design. This part of the flow is
@@ -47,11 +47,18 @@ ASIC tools all require various views from the standard-cell library.
     Once we are sure our design is working correctly, we can then start
     to push the design through the flow. The ASIC flow requires Verilog
     RTL as an input, so we can use PyMTL3's automatic translation tool to
-    translate PyMTL3 RTL models into Verilog RTL. We also generate
-    waveforms in `.vcd` (Verilog Change Dump) format, and we use
-    `vcd2saif` to convert these waveforms into per-net average activity
-    factors stored in `.saif` format. These activity factors will be used
-    for power analysis.
+    translate PyMTL3 RTL models into Verilog RTL.
+
+ 2. We use Synopsys VCS to compile and run both 4-state RTL and gate-level 
+    simulations. These simulations help us to build confidence in our design 
+    as we push our designs through different stages of the flow. From these 
+    simulations, we also generate waveforms in `.vcd` (Verilog Change Dump) 
+    format, and we use `vcd2saif` to convert these waveforms into per-net 
+    average activity factors stored in `.saif` format. These activity factors 
+    will be used for power analysis. Gate-level simulation is an extremely 
+    valuable tool for catching bugs such as hold-time violations that cannot 
+    be caught in RTL simulation, and also provides an avenue for obtaining a 
+    more accurate power analysis than RTL simulation.
 
  2. We use Synopsys Design Compiler (DC) to synthesize our design, which
     means to transform the Verilog RTL model into a Verilog gate-level
@@ -2182,8 +2189,11 @@ To Do On Your Own
 Use what you have learned so far to push the GCD Unit through the flow.
 You can use either the PyMTL3 or Verilog GCD Unit provided along with
 this tutorial. You will need to verify the GCD Unit works, generate the
-corresponding Verilog RTL and VCD file using the GCD Unit simulator,
-generate the corresponding `.saif` file, use Synopsys DC to synthesize
-the design to a gate-level netlist, use Cadence Innovus to
-place-and-route the design, and use Synopsys PT for power analysis.
-
+corresponding Verilog RTL and VTB file using the GCD Unit simulator, run 
+a 4 state simulation and generate the corresponding `.saif` file, use 
+Synopsys DC to synthesize the design to a gate-level netlist, use Cadence 
+Innovus to place-and-route the design, and use Synopsys PT for power analysis.
+{TODO review the following addition} Note that the GCD Unit will not pass 
+4-state simulation out of the box. Think about how you can modify the RTL 
+to avoid x's from showing up on the output. This will be important to 
+think about as you make your own designs in lab. 
