@@ -60,7 +60,7 @@ ASIC tools all require various views from the standard-cell library.
     be caught in RTL simulation, and also provides an avenue for obtaining a 
     more accurate power analysis than RTL simulation.
 
- 2. We use Synopsys Design Compiler (DC) to synthesize our design, which
+ 3. We use Synopsys Design Compiler (DC) to synthesize our design, which
     means to transform the Verilog RTL model into a Verilog gate-level
     netlist where all of the gates are selected from the standard-cell
     library. We need to provide Synopsys DC with abstract logical and
@@ -73,7 +73,7 @@ ASIC tools all require various views from the standard-cell library.
     information about the gate-level netlist and timing, and this `.ddc`
     file can be inspected using Synopsys Design Vision (DV).
 
- 3. We use Cadence Innovus to place-and-route our design, which means to
+ 4. We use Cadence Innovus to place-and-route our design, which means to
     place all of the gates in the gate-level netlist into rows on the
     chip and then to generate the metal wires that connect all of the
     gates together. We need to provide Cadence Innovus with the same
@@ -88,7 +88,7 @@ ASIC tools all require various views from the standard-cell library.
     viewer. Cadence Innovus also generates reports which can be used to
     accurately characterize area and timing.
 
- 4. We use Synopsys PrimeTime (PT) to perform power analysis of our
+ 5. We use Synopsys PrimeTime (PT) to perform power analysis of our
     design. We need to provide Synopsys PT with the same abstract
     logical, timing, and power views used in Synopsys DC and Cadence
     Innovus, but in addition we need to provide switching activity
@@ -597,7 +597,7 @@ you completed the PyMTL3 tutorial. If you have not completed the PyMTL3
 tutorial then you might want to go back and do that now. Basically the
 `MinMaxUnit` should look like this:
 
-```
+```python
 from pymtl3 import *
 
 class MinMaxUnit( Component ):
@@ -635,7 +635,7 @@ not for verifying RTL. After running the tests we use the sort unit
 simulator to do the final translation into Verilog and to dump the `vtb`
 (Verilog TestBench) file that will allow us to do 4-state RTL simulation using Synopsys VCS.
 
-```
+```bash
  % cd $TOPDIR/sim/build
  % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-vtb
  num_cycles          = 106
@@ -649,7 +649,7 @@ an example of the translation for the `MinMaxUnit`. Notice how PyMTL3 will
 output the source Python embedded as a comment in the corresponding
 translated Verilog.
 
-```
+```verilog
  % cd $TOPDIR/sim/build
  % less SortUnitStructRTL__nbits_8__pickled.v
 
@@ -722,7 +722,7 @@ Then, let's set up an output folder where we'll tell vcs to dump our `.vcd` file
 
 ```bash
 % mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -744,7 +744,7 @@ Synopsys VCS is an extremely in-depth tool with many command line options. If yo
 Let's run another 4-state simulation, this time using the testbench from the sort-rtl simulator run that we ran earlier, so we can obtain the vcd file that we want to use for power analysis.
 
 ```bash
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1224,7 +1224,7 @@ We'll start by creating a build directory for our post-synth run of vcs, and out
 Then we'll run vcs and ./simv to run our gate-level simulation on the sort-rtl-struct-random simulator testbench:
 
 ```bash 
-% vcs ../../asic-manual/synopsys-dc/post-synth.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/synopsys-dc/post-synth.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1822,10 +1822,10 @@ Given the more realistic timing implications of a back-annotated simulation, we 
 Then we'll run vcs and ./simv to run our gate-level simulation on the sort-rtl-struct-random simulator testbench. Notice the differences between this command and the fast functional gate-level simulation command:
 
 ```bash 
-% vcs ../../asic-manual/cadence-innovus/post-par.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf=max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+INPUT_DELAY=0.03 +define+OUTPUT_ASSERT_DELAY=0.03 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/cadence-innovus/post-par.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf=max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
 % ./simv
 ```
-This time, we include the `+sdfverbose` flag which reads in the `post-par.sdf`. Note that we also assign non-zero values for `+define+INPUT_DELAY` and `+define+OUTPUT_ASSERT_DELAY`. These values are based on the input and output delays we set during the Synopsys DC synthesis step which you might recall was `0.05*clock_period`. Including this will ensure that our timing checks will actually mean something. Without this, our timing checks will be totally bogus, because remember, garbage in = garbage out. Again, we generate a `.saif` file using `vcd2saif` to be used later for power analysis. 
+This time, we include the `+sdfverbose` flag which reads in the `post-par.sdf`. Note that we also assign non-zero values for `+define+VTB_INPUT_DELAY` and `+define+VTB_OUTPUT_ASSERT_DELAY`. These values are based on the input and output delays we set during the Synopsys DC synthesis step which you might recall was `0.05*clock_period`. Note that we assert the value at the clock constraint minus the output delay. This ensures that the signal arrives and is stable by a margin of the  output delay. Including these macros will ensure that our timing checks will actually mean something. Without this, our simulations may pass because data arrives before the clock edge, even if it does not arrive before the setup time. In such a case, the timing checks will be completely bogus. Again, we generate a `.saif` file using `vcd2saif` to be used later for power analysis. 
 
 ```bash
 % cd $TOPDIR/sim/vcs_postpnr_build/outputs
@@ -2085,7 +2085,7 @@ to the sort unit are zeros.
 % cd $TOPDIR/sim/vcs_rtl_build
 % mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
 % mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/saif
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 % cd $TOPDIR/sim/vcs_rtl_build/outputs
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
