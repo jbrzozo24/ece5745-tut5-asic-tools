@@ -50,3 +50,5 @@ asic/vcs-postpar/simv_*
 asic/vcs-postpar/testbench.v
 asic/vcs-postpar/testbench_TOP_v.v
 asic/vcs-postpar/ucli.key
+
+asic-manual/*

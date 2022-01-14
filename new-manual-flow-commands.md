@@ -29,9 +29,9 @@ NEW % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-v
 % cd $TOPDIR/sim/vcs_rtl_build
 % mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
 % mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/saif
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 
 
@@ -55,15 +55,16 @@ NEW % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-v
  dc_shell> analyze -format sverilog ../../sim/build/SortUnitStructRTL__nbits_8__pickled.v
  dc_shell> elaborate SortUnitStructRTL__nbits_8
  # constraints.tcl
- dc_shell> create_clock -name ideal_clock1 -period 0.3 [get_ports clk]
- dc_shell> set_input_delay -clock ideal_clock1 [expr 0.3*0.05] [all_inputs]
- dc_shell> set_output_delay -clock ideal_clock1 [expr 0.3*0.05] [all_outputs]
- dc_shell> set_max_fanout 20 SortUnitStructRTL__nbits_8
- dc_shell> set_max_transition [expr 0.25*0.3] SortUnitStructRTL__nbits_8
- # make_path_groups.tcl?
+ dc_shell> create_clock -name ideal_clock1 -period 0.6 [get_ports clk]
  dc_shell> set ports_clock_root [filter_collection \
                        [get_attribute [get_clocks] sources] \
                        object_class==port]
+ dc_shell> set_input_delay -clock ideal_clock1 [expr 0.6*0.05] [remove_from_collection [all_inputs] $ports_clock_root]
+ dc_shell> set_output_delay -clock ideal_clock1 [expr 0.6*0.05] [all_outputs]
+ dc_shell> set_max_fanout 20 SortUnitStructRTL__nbits_8
+ dc_shell> set_max_transition [expr 0.25*0.6] SortUnitStructRTL__nbits_8
+ # make_path_groups.tcl?
+
  dc_shell> group_path -name REGOUT \
                       -to   [all_outputs]
  dc_shell> group_path -name REGIN \
@@ -110,7 +111,7 @@ NEW % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-v
 % cd $TOPDIR/sim/vcs_postsyn_build
 % mkdir -p $TOPDIR/sim/vcs_postsyn_build/outputs/vcd
 % mkdir -p $TOPDIR/sim/vcs_postsyn_build/outputs/saif
-% vcs ../../asic-manual/synopsys-dc/post-synth.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+INPUT_DELAY=0.03 +define+OUTPUT_ASSERT_DELAY=0.03 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/synopsys-dc/post-synth.v $ECE5745_STDCELLS/stdcells.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +delay_mode_zero +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
 % ./simv
 
 
@@ -124,11 +125,12 @@ NEW % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --stats --translate --dump-v
  % cd $TOPDIR/asic-manual/cadence-innovus
 ```
 
-Create a file called constraints.sdc with:
+```bash
+ % less ../synopsys-dc/post-synth.sdc
 ```
-create_clock clk -name ideal_clock -period 0.3
-```
+
 Create a file called setup-timing.tcl with: 
+
 ```
  create_rc_corner -name typical \
     -cap_table "$env(ECE5745_STDCELLS)/rtk-typical.captable" \
@@ -143,7 +145,7 @@ Create a file called setup-timing.tcl with:
     -rc_corner typical
 
  create_constraint_mode -name constraints_default \
-    -sdc_files [list constraints.sdc]
+    -sdc_files [list ../synopsys-dc/post-synth.sdc]
 
  create_analysis_view -name analysis_default \
     -constraint_mode constraints_default \
@@ -165,6 +167,8 @@ Create a file called setup-timing.tcl with:
  innovus> set init_pwr_net   "VDD"
 
  innovus> init_design
+ innovus> setDesignMode -process 45
+ innovus> setAnalysisMode -analysisType onChipVariation -cppr both
  innovus> floorPlan -r 1.0 0.70 4.0 4.0 4.0 4.0
 
  innovus> globalNetConnect VDD -type pgpin -pin VDD -inst * -verbose
@@ -183,9 +187,17 @@ Create a file called setup-timing.tcl with:
 
  innovus> place_design
 
+ innovus> assignIoPins -pin *; # Assign IO pin location for a block-level design.
+
  innovus> ccopt_design
 
+ innovus> setOptMode -holdFixingCells {BUF_X1 BUF_X2 BUF_X4 BUF_X8 BUF_X16 BUF_X32 CLKBUF_X1 CLKBUF_X2 CLKBUF_X3}
+ innovus> setOptMode -holdTargetSlack 0.013 -setupTargetSlack 0.044;
+ innovus> optDesign -postCTS -outDir timingReports -prefix postCTS_hold -hold
+
  innovus> routeDesign
+
+ innovus> optDesign -postRoute -outDir timingReports -prefix postRoute_hold -hold
 
  innovus> setFillerMode -corePrefix FILL -core "FILLCELL_X4 FILLCELL_X2 FILLCELL_X1"
  innovus> addFiller
@@ -196,10 +208,11 @@ Create a file called setup-timing.tcl with:
  innovus> saveNetlist post-par.v
  innovus> extractRC
  innovus> rcOut -rc_corner typical -spef post-par.spef
- innovus> write_sdf post-par.sdf -interconn all -edges library -recrem split -remashold -recompute_delay_calc 
+ innovus> write_sdf post-par.sdf -interconn all -setuphold split -recrem split -recompute_delay_calc 
  innovus> streamOut post-par.gds \
             -merge "$env(ECE5745_STDCELLS)/stdcells.gds" \
-            -mapFile "$env(ECE5745_STDCELLS)/rtk-stream-out.map"
+            -mapFile "$env(ECE5745_STDCELLS)/rtk-stream-out.map" \
+            -units 10000
  innovus> report_timing
  innovus> report_area
  innovus> report_power -hierarchy all
@@ -224,6 +237,126 @@ Then run cadence innovus commands:
 ```
  % cd $TOPDIR/asic-manual/cadence-innovus
  % innovus -64 -no_gui -files init.tcl
+```
+
+## BA GL sim
+
+```bash
+% mkdir -p $TOPDIR/sim/vcs_postpnr_build
+% cd $TOPDIR/sim/vcs_postpnr_build
+% mkdir -p $TOPDIR/sim/vcs_postpnr_build/outputs/vcd
+% mkdir -p $TOPDIR/sim/vcs_postpnr_build/outputs/saif
+```
+
+```bash
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% ./simv
+```
+
+<!-- See hold time error. Let's go back into innovus. 
+
+```bash
+ % cd $TOPDIR/asic-manual
+ % rm -rf cadence-innovus
+ % mkdir -p $TOPDIR/asic-manual/cadence-innovus
+ % cd $TOPDIR/asic-manual/cadence-innovus
+```
+
+Create setup-timing.tcl
+
+```
+ create_rc_corner -name typical \
+    -cap_table "$env(ECE5745_STDCELLS)/rtk-typical.captable" \
+    -T 25
+
+ create_library_set -name libs_typical \
+    -timing [list "$env(ECE5745_STDCELLS)/stdcells.lib"]
+
+ create_delay_corner -name delay_default \
+    -early_library_set libs_typical \
+    -late_library_set libs_typical \
+    -rc_corner typical
+
+ create_constraint_mode -name constraints_default \
+    -sdc_files [list ../synopsys-dc/post-synth.sdc]
+
+ create_analysis_view -name analysis_default \
+    -constraint_mode constraints_default \
+    -delay_corner delay_default
+
+ set_analysis_view \
+    -setup [list analysis_default] \
+    -hold [list analysis_default]
+```
+
+```bash
+ % cd $TOPDIR/asic-manual/cadence-innovus
+ % innovus -64 -overwrite
+
+ set init_mmmc_file "setup-timing.tcl"
+ set init_verilog   "../synopsys-dc/post-synth.v"
+ set init_top_cell  "SortUnitStructRTL__nbits_8"
+ set init_lef_file  "$env(ECE5745_STDCELLS)/rtk-tech.lef $env(ECE5745_STDCELLS)/stdcells.lef"
+ set init_gnd_net   "VSS"
+ set init_pwr_net   "VDD"
+ init_design
+ floorPlan -r 1.0 0.70 4.0 4.0 4.0 4.0
+ globalNetConnect VDD -type pgpin -pin VDD -inst * -verbose
+ globalNetConnect VSS -type pgpin -pin VSS -inst * -verbose
+ sroute -nets {VDD VSS}
+ addRing -nets {VDD VSS} -width 0.6 -spacing 0.5 \
+            -layer [list top 7 bottom 7 left 6 right 6]
+ innovus> addStripe -nets {VSS VDD} -layer 6 -direction vertical \
+            -width 0.4 -spacing 0.5 -set_to_set_distance 5 -start 0.5
+ innovus> addStripe -nets {VSS VDD} -layer 7 -direction horizontal \
+            -width 0.4 -spacing 0.5 -set_to_set_distance 5 -start 0.5
+ place_design
+ ccopt_design
+ setOptMode -usefulSkewPostRoute true
+ setOptMode -holdTargetSlack 0.1;  #100 ps
+ setOptMode -setupTargetSlack 0.1;  
+ optDesign -postCTS -outDir reports -prefix postCTS_hold -hold
+ routeDesign
+ setAnalysisMode -analysisType onChipVariation
+ optDesign -postRoute -outDir reports -prefix postRoute_hold -hold
+
+ setFillerMode -corePrefix FILL -core "FILLCELL_X4 FILLCELL_X2 FILLCELL_X1"
+ addFiller
+ verifyConnectivity
+ verify_drc
+ saveNetlist post-par.v
+ extractRC
+ rcOut -rc_corner typical -spef post-par.spef
+ write_sdf post-par.sdf -interconn all -edges library -recrem split -remashold -recompute_delay_calc
+ streamOut post-par.gds \
+            -merge "$env(ECE5745_STDCELLS)/stdcells.gds" \
+            -mapFile "$env(ECE5745_STDCELLS)/rtk-stream-out.map" \
+            -units 10000
+ innovus> report_timing
+ innovus> report_area
+ innovus> report_power -hierarchy all
+ innovus> exit
+
+``` -->
+
+Run the simulation too fast to violate setup time constraint
+
+```bash
+% cd $TOPDIR/sim/vcs_postpnr_build
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.45 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.42 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% ./simv
+```
+
+Re-run at the correct clock speed to obtain the right vcd for saif generation
+
+```bash
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% ./simv
+```
+
+```bash
+% cd $TOPDIR/sim/vcs_postpnr_build/outputs
+% vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
 ```
 
 ## Synopsys pt power
@@ -255,7 +388,7 @@ Then run cadence innovus commands:
 
  To do on your own:
 
-```
+```bash
  % cd $TOPDIR/sim/build
  % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --input zeros --stats --translate --dump-vtb
  num_cycles          = 105
@@ -263,7 +396,7 @@ Then run cadence innovus commands:
 % cd $TOPDIR/sim/vcs_rtl_build
 % mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/vcd
 % mkdir -p $TOPDIR/sim/vcs_rtl_build/outputs/saif
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +define+CYCLE_TIME=1 +define+INPUT_DELAY=0 +define+OUTPUT_ASSERT_DELAY=0 +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+outputs/vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 % cd $TOPDIR/sim/vcs_rtl_build/outputs
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
