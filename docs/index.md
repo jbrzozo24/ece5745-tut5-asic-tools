@@ -789,7 +789,7 @@ To create a 4-state simulation, let's start by creating another build directory 
 Then, let's set up an output folder where we'll tell vcs to dump our `.vcd` file. We run vcs to compile a simulation, and ./simv to run the simulation. Let's run a 4-state simulation for `test_basic` using the design `SortUnitStructRTL__nbits_8__pickled.v`.
 
 ```bash
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -816,7 +816,7 @@ will only be doing power analysis on the final gate-level netlist that
 we'll obtain from Cadence Innovus.
 
 ```bash
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1255,7 +1255,7 @@ We'll start by creating a build directory for our post-synth run of vcs, and out
 Then we'll run vcs and ./simv to run our gate-level simulation on the sort-rtl-struct-random simulator testbench:
 
 ```bash 
-% vcs ../../asic-manual/synopsys-dc/post-synth.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +delay_mode_zero +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/synopsys-dc/post-synth.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +delay_mode_zero +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1888,7 +1888,7 @@ sort-rtl-struct-random simulator testbench. Notice the differences
 between this command and the fast functional gate-level simulation command:
 
 ```bash 
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps +vcs+saif_libcell -lca
 % ./simv
 ```
 This time, we include the `+sdfverbose` flag which reads in the 
@@ -1908,7 +1908,7 @@ time down to 0.45 ns:
 
 ```bash
 % cd $TOPDIR/asic-manual/vcs-postpnr-build
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.45 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.42 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.45 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.42 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1933,7 +1933,7 @@ all output ports of your DUT does not produce X's after reset.
 Let's re-run the simulation at the correct clock speed to obtain the right vcd for saif generation
 
 ```bash
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -2162,7 +2162,7 @@ to the sort unit are zeros.
  num_cycles          = 105
  num_cycles_per_sort = 1.05
 % cd $TOPDIR/asic-manual/vcs-rtl-build
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns +vcs+saif_libcell -lca
 % ./simv
 % cd $TOPDIR/asic-manual/vcs-rtl-build
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
