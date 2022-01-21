@@ -1,6 +1,6 @@
 #@ # 
 #@ # Running dc_shell Version R-2020.09-SP2 for linux64 -- Dec 03, 2020
-#@ # Date:   Sat Jan  8 14:13:59 2022
+#@ # Date:   Tue Jan 11 18:52:19 2022
 #@ # Run by: jtb237@brg.ece.cornell.edu
 #@ 
 
@@ -6686,7 +6686,33 @@ source /opt/synopsys/packages/syn/R-2020-09.SP2/admin/setup/.synopsys_dc.setup
 
 #@ # -- End source /opt/synopsys/packages/syn/R-2020-09.SP2/admin/setup/.synopsys_dc.setup
 
-dc_shell> alias "dc_shell>" ""
 alias "dc_shell>" ""
+# setup_session.tcl
 dc_shell> set_app_var target_library "$env(ECE5745_STDCELLS)/stdcells.db"
+dc_shell> set_app_var link_library   "* $env(ECE5745_STDCELLS)/stdcells.db"
+dc_shell> saif_map -start
+# read_design.tcl
+dc_shell> analyze -format sverilog ../../sim/build/SortUnitStructRTL__nbits_8__pickled.v
+dc_shell> elaborate SortUnitStructRTL__nbits_8
+# constraints.tcl
+dc_shell> create_clock -name ideal_clock1 -period 0.6 [get_ports clk]
+dc_shell> set ports_clock_root [filter_collection                        [get_attribute [get_clocks] sources]                        object_class==port]
+dc_shell> set_input_delay -clock ideal_clock1 [expr 0.6*0.05] [remove_from_collection [all_inputs] $ports_clock_root]
+dc_shell> set_output_delay -clock ideal_clock1 [expr 0.6*0.05] [all_outputs]
+dc_shell> set_max_fanout 20 SortUnitStructRTL__nbits_8
+dc_shell> set_max_transition [expr 0.25*0.6] SortUnitStructRTL__nbits_8
+# make_path_groups.tcl?
+dc_shell> group_path -name REGOUT                       -to   [all_outputs]
+dc_shell> group_path -name REGIN                       -from [remove_from_collection [all_inputs] $ports_clock_root]
+dc_shell> group_path -name FEEDTHROUGH                       -from [remove_from_collection [all_inputs] $ports_clock_root]                       -to   [all_outputs]
+# compile.tcl
+dc_shell> check_design
+dc_shell> compile
+dc_shell> saif_map -create_map                     -input "../../sim/vcs_rtl_build/outputs/saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif"                     -source_instance "SortUnitStructRTL__nbits_8_tb/DUT"
+dc_shell> saif_map -type ptpx -write_map "post-synth.namemap"
+dc_shell> write -format verilog -hierarchy -output post-synth.v
+dc_shell> write -format ddc     -hierarchy -output post-synth.ddc
+dc_shell> write_sdc -nosplit post-synth.sdc; # DIDNT INCLUDE IN MANUAL TUT BC POWER AND INNOVUS MAKE THEIR OWN, NEED TO TEST THIS SINCE WE ADDED INPUT DELAY AND STUFF. My guess is that we'll need to have this command, and modify the power and innovus manual steps to read in this sdc. We should also make sure the sort unit meets timing.
+# reporting.tcl
+dc_shell> report_timing -nosplit -transition_time -nets -attributes
 exit

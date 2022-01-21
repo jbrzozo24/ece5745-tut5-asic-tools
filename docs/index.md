@@ -93,7 +93,7 @@ ASIC tools all require various views from the standard-cell library.
     logical, timing, and power views used in Synopsys DC and Cadence
     Innovus, but in addition we need to provide switching activity
     information for every net in the design (which comes from the `.saif`
-    file), adn capacitance information for every net in the design (which
+    file), and capacitance information for every net in the design (which
     comes from the `.spef` file). Synopsys PT puts the switching activity, 
     capacitance, clock frequency, and voltage together to estimate 
     the power consumption of every net and thus every module in the 
