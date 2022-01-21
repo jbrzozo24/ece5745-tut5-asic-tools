@@ -910,8 +910,8 @@ our design out in real silicon. Here, we choose 5% of the clock period for
 our input and output delays. 
 
 ```
- dc_shell> set_input_delay -clock ideal_clock1 [expr 0.6*0.05] [all_inputs]
- dc_shell> set_output_delay -clock ideal_clock1 [expr 0.6*0.05] [all_outputs]
+ dc_shell> set_input_delay -clock ideal_clock1 [expr 0.3*0.05] [all_inputs]
+ dc_shell> set_output_delay -clock ideal_clock1 [expr 0.3*0.05] [all_outputs]
 ```
 Next, we give Synopsys DC some constraints about fanout and transition slew. 
 Fanout roughly describes the number of inputs driven by a particular output, 
@@ -922,7 +922,7 @@ maximum slew to one quarter of the clock period.
 
 ```
  dc_shell> set_max_fanout 20 SortUnitStructRTL__nbits_8
- dc_shell> set_max_transition [expr 0.25*0.6] SortUnitStructRTL__nbits_8
+ dc_shell> set_max_transition [expr 0.25*0.3] SortUnitStructRTL__nbits_8
 ```
 
 We can use the `check_design` command to make sure there are no obvious
