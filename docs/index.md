@@ -779,21 +779,28 @@ reset properly. We consider it best practice to force invalid output data
 to zero, to avoid `x`'s in your 4-state simulation, and provide a 
 deterministic output for every cycle no matter the initial condition. 
 
-To create a 4-state simulation, let's start by creating another build directory for our vcs work. 
+To create a 4-state simulation, let's start by creating another build 
+directory for our vcs work. 
 
 ```bash
 % mkdir -p $TOPDIR/asic-manual/vcs-rtl-build
 % cd $TOPDIR/asic-manual/vcs-rtl-build
 ```
 
-Then, let's set up an output folder where we'll tell vcs to dump our `.vcd` file. We run vcs to compile a simulation, and ./simv to run the simulation. Let's run a 4-state simulation for `test_basic` using the design `SortUnitStructRTL__nbits_8__pickled.v`.
+We run vcs to compile a simulation, and ./simv to run the simulation. 
+Let's run a 4-state simulation for `test_basic` using the design 
+`SortUnitStructRTL__nbits_8__pickled.v`.
 
 ```bash
 % vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns +vcs+saif_libcell -lca
 % ./simv
 ```
 
-Synopsys VCS is an extremely in-depth tool with many command line options. If you want to learn more on your own about other options that are available to you with VCS, you can visit the course webpage [here](https://www.csl.cornell.edu/courses/ece5745/asicdocs/index.html). However, we've detailed some of the key command line options below:
+Synopsys VCS is an extremely in-depth tool with many command line options. 
+If you want to learn more on your own about other options that are available 
+to you with VCS, you can visit the course webpage 
+[here](https://www.csl.cornell.edu/courses/ece5745/asicdocs/index.html). 
+However, we've detailed some of the key command line options below:
 
 ```
 ../build/SortUnitStructRTL__nbits_8__pickled.v        -The path to the source RTL file
