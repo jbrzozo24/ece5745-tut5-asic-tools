@@ -789,7 +789,7 @@ To create a 4-state simulation, let's start by creating another build directory 
 Then, let's set up an output folder where we'll tell vcs to dump our `.vcd` file. We run vcs to compile a simulation, and ./simv to run the simulation. Let's run a 4-state simulation for `test_basic` using the design `SortUnitStructRTL__nbits_8__pickled.v`.
 
 ```bash
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -816,7 +816,7 @@ will only be doing power analysis on the final gate-level netlist that
 we'll obtain from Cadence Innovus.
 
 ```bash
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1255,7 +1255,7 @@ We'll start by creating a build directory for our post-synth run of vcs, and out
 Then we'll run vcs and ./simv to run our gate-level simulation on the sort-rtl-struct-random simulator testbench:
 
 ```bash 
-% vcs ../../asic-manual/synopsys-dc/post-synth.v $ECE5745_STDCELLS/stdcells.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +delay_mode_zero +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/synopsys-dc/post-synth.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +delay_mode_zero +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1888,7 +1888,7 @@ sort-rtl-struct-random simulator testbench. Notice the differences
 between this command and the fast functional gate-level simulation command:
 
 ```bash 
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 This time, we include the `+sdfverbose` flag which reads in the 
@@ -1908,7 +1908,7 @@ time down to 0.45 ns:
 
 ```bash
 % cd $TOPDIR/asic-manual/vcs-postpnr-build
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.45 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.42 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.45 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.42 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1933,7 +1933,7 @@ all output ports of your DUT does not produce X's after reset.
 Let's re-run the simulation at the correct clock speed to obtain the right vcd for saif generation
 
 ```bash
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
+% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -hsopt=gates -override_timescale=1ns/1ps -rad +vcs+saif_libcell -lca
 % ./simv
 ```
 
@@ -1971,35 +1971,6 @@ we simply assume some toggle probability on each net. For more accurate
 power analysis we need to find out the actual activity for every net for
 a given experiment. One way to do this is to perform post-place-and-route
 gate-level simulation. 
-
-{TODO change this paragraph bc we are using gate-level sim}
-
-In this course, we will start with a simpler approach that is slightly less
-accurate than gate-level simulation. We will use the per-net activity
-factors from the RTL simulation which were stored in an `.saif` file
-earlier in this tutorial. The challenge is that the activity factors in
-the `.saif` file are from RTL simulation, and the RTL model is obviously
-not a one-to-one match with the gate-level model. The RTL model might
-have had a net called `result_plus_4`, but the logic may have been
-optimized during synthesis and place-and-route such that this net is
-simply not in the gate-level model. Similarly, the gate-level model will
-have many nets which do not map to corresponding nets in the RTL model.
-Fortunately, there will be many nets that _do_ match between the RTL and
-gate-level models. For example, if we have a register in our RTL model
-then that register is guaranteed to be in the gate-level model. So if we
-know the activity factor of each bit in the register from the `.saif`
-file, then we know the activity factor or each corresponding flip-flop in
-the gate-level model. Similarly, if we have a module port in our RTL
-model and we have not flattened the design, then that module port is
-guaranteed to be in the gate-level model (another good reason not to
-flatten your design!). Synopsys PT can use sophisticated algorithms
-including many tiny little gate-level simulations of just a few gates in
-order to estimate the activity factor of all nets downstream from the
-valid activity factors included in the `.saif`. For more information
-about this kind of power analysis, consult Chapter 5 (more specifically,
-the section titled "Estimating Non-Annotated Switching Activity" of the
-[PrimeTime PX User
-Guide](http://www.csl.cornell.edu/courses/ece5745/asicdocs/ppug.pdf).
 
 We start by creating a subdirectory for our work, and then launching
 Synopsys PT.
@@ -2058,9 +2029,7 @@ We are now ready to read in the actual activity factors which will be
 used for power analysis. The `.saif` file comes from a `.vcd` file which
 in turn came from running a simulation with a test harness. We need to
 strip off part of the instance names in the `.saif` file since the
-gate-level netlist does not have this test harness. Again, the key is to
-make sure we do everything we can to ensure as many nets as possible
-match between the `.saif` generated from RTL and the gate-level netlist.
+gate-level netlist does not have this test harness.
 
 ```
  pt_shell> read_saif "../../asic-manual/vcs-postpnr-build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
@@ -2193,7 +2162,7 @@ to the sort unit are zeros.
  num_cycles          = 105
  num_cycles_per_sort = 1.05
 % cd $TOPDIR/asic-manual/vcs-rtl-build
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -debug_pp -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
+% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns -rad +vcs+saif_libcell -lca
 % ./simv
 % cd $TOPDIR/asic-manual/vcs-rtl-build
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
@@ -2319,7 +2288,7 @@ corresponding Verilog RTL and VTB file using the GCD Unit simulator, run
 a 4 state simulation and generate the corresponding `.saif` file, use 
 Synopsys DC to synthesize the design to a gate-level netlist, use Cadence 
 Innovus to place-and-route the design, and use Synopsys PT for power analysis.
-{TODO review the following addition} Note that the GCD Unit will not pass 
-4-state simulation out of the box. Think about how you can modify the RTL 
-to avoid x's from showing up on the output. This will be important to 
-think about as you make your own designs in lab. 
+Note that the GCD Unit will not pass 4-state simulation out of the box. 
+Think about how you can modify the RTL to avoid x's from showing up on the 
+output. This will be important to think about as you make your own 
+designs in the labs. 
