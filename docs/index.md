@@ -874,19 +874,6 @@ Note that we can use `$env(ECE5745_STDCELLS)` to get access to the
 containing the standard cells, and that we are referencing the abstract
 logical and timing views in the `.db` format.
 
-The next step is to turn on name mapping. When we do power analysis we
-will be using activity factors from RTL simulation in `.saif` format with
-gate-level models. There will be many nets from the RTL simulation that
-may not exist in the gate-level model, but ideally there will still be
-enough nets that are present in both the `.saif` file and the gate-level
-model to be able to do reasonably accurate power estimation. To help this
-process, name mapping will keep track of how names in the RTL map to
-names in the gate-level model.
-
-```
- dc_shell> saif_map -start
-```
-
 As an aside, if you want to learn more about any command in any Synopsys
 tool, you can simply type `man toolname` at the shell prompt. We are now
 ready to read in the Verilog file which contains the top-level design and
