@@ -7,8 +7,8 @@ This repository contains the code and documentation for ECE 5745 Tutorial
 views that make-up a standard-cell library and then illustrates how to
 use the Synopsys/Cadence ASIC tools to map an RTL design down to these
 standard cells and ultimately silicon. The tutorial discusses the key
-tools used for synthesis, place-and-route, and power analysis. This
-tutorial requires entering commands manually for each of the tools to
+tools used for simulation, synthesis, place-and-route, and power analysis. 
+This tutorial requires entering commands manually for each of the tools to
 enable students to gain a better understanding of the detailed steps
 involved in this process. The next tutorial will illustrate how this
 process can be automated to facilitate rapid design-space exploration.
@@ -23,5 +23,4 @@ Or online here:
 
  - https://cornell-ece5745.github.io/ece5745-tut5-asic-tools
 
- - https://jbrzozo24.github.io/ece5745-tut5-asic-tools/
 
