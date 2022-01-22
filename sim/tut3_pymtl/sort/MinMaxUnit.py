@@ -17,17 +17,8 @@ class MinMaxUnit( Component ):
     s.out_min = OutPort( nbits )
     s.out_max = OutPort( nbits )
 
-    @update
-    def block():
-
-      if s.in0 >= s.in1:
-        s.out_max @= s.in0
-        s.out_min @= s.in1
-      else:
-        s.out_max @= s.in1
-        s.out_min @= s.in0
-
-  # Line tracing
-
-  def line_trace( s ):
-    return f"{s.in0}|{s.in1}(){s.out_min}|{s.out_max}"
+    # ''' TUTORIAL TASK ''''''''''''''''''''''''''''''''''''''''''''''''''
+    # This model is incomplete. As part of the tutorial you will insert
+    # logic here to implement the min/max unit. You should also write a
+    # unit test from scratch named MinMaxUnit_test.py.
+    # ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
