@@ -793,8 +793,8 @@ To create a 4-state simulation, let's start by creating another build
 directory for our vcs work. 
 
 ```bash
-% mkdir -p $TOPDIR/sim/vcs-rtl-build
-% cd $TOPDIR/sim/vcs-rtl-build
+% mkdir -p $TOPDIR/asic-manual/vcs-rtl-build
+% cd $TOPDIR/asic-manual/vcs-rtl-build
 ```
 
 We run vcs to compile a simulation, and ./simv to run the simulation. 
@@ -802,7 +802,7 @@ Let's run a 4-state simulation for `test_basic` using the design
 `SortUnitStructRTL__nbits_8__pickled.v`.
 
 ```bash
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns
+% vcs ../../sim/build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../../sim/build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../../sim/build/SortUnitStructRTL__nbits_8_test_basic_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_test_basic_vcs.vcd -override_timescale=1ns/1ns
 % ./simv
 ```
 
@@ -813,13 +813,13 @@ to you with VCS, you can visit the course webpage
 However, we've detailed some of the key command line options below:
 
 ```
-../build/SortUnitStructRTL__nbits_8__pickled.v        -The path to the source RTL file
+../../sim/build/SortUnitStructRTL__nbits_8__pickled.v        -The path to the source RTL file
 -sverilog                                             -Indicates that we are using SystemVerilog
-+incdir+../build                                      -Specifies directories that contain files that are tagged with `include. We include ../build because our VTB
-                                                       includes a _tb.v.cases file located within the ../build directory
++incdir+../../sim/build                                      -Specifies directories that contain files that are tagged with `include. We include ../../sim/build because our VTB
+                                                       includes a _tb.v.cases file located within the ../../sim/build directory
 -xprop=tmerge                                         -Specifies that we want to use the tmerge truth table for x-propagation (see VCS user manual for more info)
 -top SortUnitStructRTL__nbits_8_tb                    -Indicates the name of the top module (located within the VTB)
-../build/SortUnitStructRTL__nbits_8_test_basic_tb.v   -The path to the source testbench file
+../../sim/build/SortUnitStructRTL__nbits_8_test_basic_tb.v   -The path to the source testbench file
 +define+<macro>                                       -defines a macro that may be used in your verilog code or testbench
 +vcs+dumpvars+<filename>.vcd                          -Tells VCS to dump a VCD in the current dir with the name <filename>.vcd
 -override_timescale=1ns/1ns                           -Changes the timescale. Units/precision
@@ -832,7 +832,7 @@ will only be doing power analysis on the final gate-level netlist that
 we'll obtain from Cadence Innovus.
 
 ```bash
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns
+% vcs ../../sim/build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../../sim/build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../../sim/build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ns
 % ./simv
 ```
 
@@ -1261,15 +1261,15 @@ gate-level simulation, which we'll perfrom later in this tutorial.
 We'll start by creating a build directory for our post-synth run of vcs.
 
 ```bash
-% mkdir -p $TOPDIR/sim/vcs-postsyn-build
-% cd $TOPDIR/sim/vcs-postsyn-build
+% mkdir -p $TOPDIR/asic-manual/vcs-postsyn-build
+% cd $TOPDIR/asic-manual/vcs-postsyn-build
 ```
 
 Then we'll run vcs and ./simv to run our gate-level simulation 
 on the sort-rtl-struct-random simulator testbench:
 
 ```bash 
-% vcs ../../asic-manual/synopsys-dc/post-synth.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +delay_mode_zero +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ps
+% vcs ../synopsys-dc/post-synth.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../../sim/build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../../sim/build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +delay_mode_zero +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -override_timescale=1ns/1ps
 % ./simv
 ```
 
@@ -1935,8 +1935,8 @@ a build directory for our post-synth run of vcs, and output directories
 for the `.vcd` and `.saif` that we'll generate for power analysis. 
 
 ```bash
-% mkdir -p $TOPDIR/sim/vcs-postpnr-build
-% cd $TOPDIR/sim/vcs-postpnr-build
+% mkdir -p $TOPDIR/asic-manual/vcs-postpnr-build
+% cd $TOPDIR/asic-manual/vcs-postpnr-build
 ```
 
 Then we'll run vcs and ./simv to run our gate-level simulation on the 
@@ -1944,7 +1944,7 @@ sort-rtl-struct-random simulator testbench. Notice the differences
 between this command and the fast functional gate-level simulation command:
 
 ```bash 
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -override_timescale=1ns/1ps
+% vcs ../cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../../sim/build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../../sim/build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -override_timescale=1ns/1ps
 % ./simv
 ```
 This time, we add the flag `+neg_tchk`, which enables negative values in 
@@ -1965,8 +1965,8 @@ these timing checks can be, lets run another simulation where we try to push
 the design to run too quickly. Here, we reduce the cycle time down to 0.45 ns: 
 
 ```bash
-% cd $TOPDIR/sim/vcs-postpnr-build
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf max:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.45 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.42 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -override_timescale=1ns/1ps
+% cd $TOPDIR/asic-manual/vcs-postpnr-build
+% vcs ../cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../../sim/build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../../sim/build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf max:SortUnitStructRTL__nbits_8_tb.DUT:../cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.45 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.42 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -override_timescale=1ns/1ps
 % ./simv
 ```
 
@@ -2000,7 +2000,7 @@ Let's re-run the simulation at the correct clock speed to obtain the
 right vcd for saif generation.
 
 ```bash
-% vcs ../../asic-manual/cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../../asic-manual/cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -override_timescale=1ns/1ps
+% vcs ../cadence-innovus/post-par.v $ECE5745_STDCELLS/stdcells.v -full64 -sverilog +incdir+../../sim/build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../../sim/build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random_tb.v +sdfverbose -sdf min:SortUnitStructRTL__nbits_8_tb.DUT:../cadence-innovus/post-par.sdf +define+CYCLE_TIME=0.6 +define+VTB_INPUT_DELAY=0.03 +define+VTB_OUTPUT_ASSERT_DELAY=0.57 +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd +neg_tchk -override_timescale=1ns/1ps
 % ./simv
 ```
 
@@ -2012,7 +2012,7 @@ convert `.vcd` files into `.saif` files. An `.saif` file only contains a
 single average activity factor for every net.
 
 ```bash
-% cd $TOPDIR/sim/vcs-postpnr-build
+% cd $TOPDIR/asic-manual/vcs-postpnr-build
 % vcd2saif -input ./SortUnitStructRTL__nbits_8_sort-rtl-struct-random_vcs.vcd -output ./SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif
 ```
 
@@ -2099,7 +2099,7 @@ strip off part of the instance names in the `.saif` file since the
 gate-level netlist does not have this test harness.
 
 ```
- pt_shell> read_saif "../../sim/vcs-postpnr-build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
+ pt_shell> read_saif "../../asic-manual/vcs-postpnr-build/SortUnitStructRTL__nbits_8_sort-rtl-struct-random.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
 ```
 
 The `.db` file includes parasitic capacitance estimates for every pin of
@@ -2228,10 +2228,10 @@ to the sort unit are zeros.
  % ../tut3_pymtl/sort/sort-sim --impl rtl-struct --input zeros --stats --translate --dump-vtb
  num_cycles          = 105
  num_cycles_per_sort = 1.05
-% cd $TOPDIR/sim/vcs-rtl-build
-% vcs ../build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns
+% cd $TOPDIR/asic-manual/vcs-rtl-build
+% vcs ../../sim/build/SortUnitStructRTL__nbits_8__pickled.v -full64 -sverilog +incdir+../../sim/build +lint=all -xprop=tmerge -top SortUnitStructRTL__nbits_8_tb ../../sim/build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_tb.v +vcs+dumpvars+SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -override_timescale=1ns/1ns
 % ./simv
-% cd $TOPDIR/sim/vcs-rtl-build
+% cd $TOPDIR/asic-manual/vcs-rtl-build
 % vcd2saif -input ./vcd/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros_vcs.vcd -output ./saif/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif
 ``` 
 
@@ -2241,7 +2241,7 @@ you will need to read in the new `.saif` file. In other words, use the
 following command:
 
 ```
- pt_shell> read_saif "../../sim/vcs-postpnr-build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
+ pt_shell> read_saif "../../asic-manual/vcs-postpnr-build/SortUnitStructRTL__nbits_8_sort-rtl-struct-zeros.saif" -strip_path "SortUnitStructRTL__nbits_8_tb/DUT"
 ```
 
 As with Synopsys DC, you can put a sequence of commands in a `.tcl` file
